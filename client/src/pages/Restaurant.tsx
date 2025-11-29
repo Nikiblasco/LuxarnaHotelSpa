@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, UtensilsCrossed, Music, Wine } from "lucide-react";
-import roomImage1 from "@assets/room pics 2_1764432338683.webp";
+import restaurantImage from "@assets/generated_images/luxury_restaurant_and_bar.png";
 
 const mealTimes = [
   {
@@ -61,7 +61,7 @@ export default function Restaurant() {
             <Card className="overflow-hidden">
               <div className="aspect-[16/10] overflow-hidden">
                 <img
-                  src={roomImage1}
+                  src={restaurantImage}
                   alt="Restaurant interior"
                   className="w-full h-full object-cover"
                 />

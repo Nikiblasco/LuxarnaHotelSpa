@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, Bed, Sparkles, UtensilsCrossed, Heart } from "lucide-react";
 import roomImage1 from "@assets/room pics 2_1764432338683.webp";
-import roomImage2 from "@assets/Room pics_1764432345524.webp";
+import spaImage from "@assets/generated_images/luxury_spa_treatment_room.png";
+import restaurantImage from "@assets/generated_images/luxury_restaurant_and_bar.png";
+import heroImage from "@assets/luxarna-hotel-and-s-ng-port-harcourt-bc-15089961-0_1764432368085.jpg";
 
 const sections = [
   {
@@ -18,15 +20,15 @@ const sections = [
     title: "Relaxing Spa",
     description: "Rejuvenate your body and mind with our world-class spa treatments, from massages to facials.",
     icon: Sparkles,
-    image: roomImage2,
+    image: spaImage,
     link: "/spa",
     cta: "Explore Spa",
   },
   {
-    title: "Fine Dining",
-    description: "Savor exquisite cuisine at our restaurant and enjoy entertainment at our karaoke bar.",
+    title: "Restaurant & Karaoke Bar",
+    description: "Enjoy delicious meals at our restaurant and entertainment at our vibrant karaoke bar.",
     icon: UtensilsCrossed,
-    image: roomImage1,
+    image: restaurantImage,
     link: "/restaurant",
     cta: "See Menu",
   },
@@ -34,7 +36,7 @@ const sections = [
     title: "Our Story",
     description: "Discover the Luxarna experience - where comfort, privacy, and luxury come together.",
     icon: Heart,
-    image: roomImage2,
+    image: heroImage,
     link: "/about",
     cta: "Learn More",
   },

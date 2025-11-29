@@ -16,14 +16,14 @@ const contactInfo = [
   {
     icon: Phone,
     title: "Phone",
-    content: "+234 800 000 0000",
-    subContent: "+234 700 000 0000",
+    content: "+234 704 992 9851",
+    subContent: "",
   },
   {
     icon: Mail,
     title: "Email",
-    content: "info@luxarnahotel.com",
-    subContent: "reservations@luxarnahotel.com",
+    content: "LuxarnaHotel@gmail.com",
+    subContent: "",
   },
   {
     icon: Clock,
@@ -35,7 +35,7 @@ const contactInfo = [
 
 export default function Contact() {
   const handleWhatsAppClick = () => {
-    window.open("https://wa.me/2348000000000", "_blank");
+    window.open("https://wa.me/2347049929851", "_blank");
   };
 
   return (

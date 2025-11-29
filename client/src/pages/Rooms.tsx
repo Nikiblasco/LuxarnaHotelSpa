@@ -1,15 +1,17 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import RoomCard from "@/components/RoomCard";
-import roomImage1 from "@assets/room pics 2_1764432338683.webp";
-import roomImage2 from "@assets/Room pics_1764432345524.webp";
+import deluxeKingSuiteImage from "@assets/room pics 2_1764432338683.webp";
+import kingSuiteImage from "@assets/Room pics_1764432345524.webp";
+import deluxeRoomImage from "@assets/1764434733686_1764435313833.jpg";
+import standardRoomImage from "@assets/generated_images/standard_hotel_room_interior.png";
 
 const rooms = [
   {
     name: "Deluxe King Suite",
     price: 45000,
     description: "Our most spacious suite featuring a luxurious king-size bed, elegant furnishings, premium bathroom with jacuzzi, and a private living area. Perfect for those seeking the ultimate in comfort and style.",
-    image: roomImage1,
+    image: deluxeKingSuiteImage,
     amenities: ["wifi", "parking", "breakfast", "tv", "ac", "bathroom"],
     featured: true,
   },
@@ -17,7 +19,7 @@ const rooms = [
     name: "King Suite",
     price: 35000,
     description: "A sophisticated suite with a comfortable king-size bed, modern decor, spacious bathroom, and premium amenities. Ideal for couples and business travelers looking for refined comfort.",
-    image: roomImage2,
+    image: kingSuiteImage,
     amenities: ["wifi", "parking", "tv", "ac", "bathroom"],
     featured: false,
   },
@@ -25,7 +27,7 @@ const rooms = [
     name: "Deluxe Room",
     price: 25000,
     description: "Elegantly appointed room with premium bedding, ambient LED lighting, stylish furnishings, and all modern amenities. A perfect balance of luxury and value.",
-    image: roomImage1,
+    image: deluxeRoomImage,
     amenities: ["wifi", "tv", "ac", "bathroom"],
     featured: false,
   },
@@ -33,7 +35,7 @@ const rooms = [
     name: "Standard Room",
     price: 20000,
     description: "Comfortable and well-equipped room featuring quality bedding, modern amenities, and everything you need for a pleasant stay. Great value without compromising on comfort.",
-    image: roomImage2,
+    image: standardRoomImage,
     amenities: ["wifi", "tv", "ac"],
     featured: false,
   },

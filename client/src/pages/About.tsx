@@ -23,9 +23,9 @@ const coreValues = [
 ];
 
 const stats = [
-  { value: "50+", label: "Luxury Rooms" },
+  { value: "9", label: "Luxury Rooms" },
   { value: "24/7", label: "Room Service" },
-  { value: "1000+", label: "Happy Guests" },
+  { value: "100+", label: "Happy Guests" },
   { value: "5", label: "Star Experience" },
 ];
 

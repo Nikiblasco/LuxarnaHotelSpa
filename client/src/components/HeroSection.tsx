@@ -15,21 +15,28 @@ export default function HeroSection() {
       <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className="animate-fade-in-up space-y-6">
           <p 
-            className="text-primary font-medium tracking-[0.3em] uppercase text-sm md:text-base"
+            className="text-white/70 font-medium tracking-[0.3em] uppercase text-sm md:text-base"
             style={{ animationDelay: "0.2s" }}
             data-testid="text-hero-welcome"
           >
-            Welcome to Luxarna
+            Welcome to
           </p>
           
           <h1 
-            className="font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight"
+            className="font-serif text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-primary leading-tight drop-shadow-lg"
             style={{ animationDelay: "0.4s" }}
             data-testid="text-hero-tagline"
           >
-            Your Peaceful<br />
-            <span className="text-primary">Escape</span> Awaits
+            LUXARNA
           </h1>
+          
+          <p 
+            className="font-serif text-xl sm:text-2xl md:text-3xl text-white/90 italic"
+            style={{ animationDelay: "0.5s" }}
+            data-testid="text-hero-subtitle"
+          >
+            Your Peaceful Escape Awaits
+          </p>
           
           <p 
             className="text-white/80 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed"

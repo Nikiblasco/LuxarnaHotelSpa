@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Menu, X, Phone } from "lucide-react";
+import logoImage from "@assets/1764434830238_1764435323080.jpg";
 
 const navItems = [
   { name: "Home", path: "/" },
@@ -20,13 +21,8 @@ export default function Navigation() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="font-serif text-xl md:text-2xl font-bold text-primary" data-testid="text-logo">
-              Luxarna
-            </span>
-            <span className="hidden sm:inline text-xs text-muted-foreground uppercase tracking-widest">
-              Hotel & Spa
-            </span>
+          <Link href="/" className="flex items-center gap-3">
+            <img src={logoImage} alt="Luxarna Hotel & Spa" className="h-10 md:h-12 w-auto rounded" data-testid="img-logo" />
           </Link>
 
           <div className="hidden lg:flex items-center gap-1">

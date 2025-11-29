@@ -1,7 +1,9 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ServiceCard from "@/components/ServiceCard";
+import { Card } from "@/components/ui/card";
 import { Sparkles, Hand, Footprints, Heart } from "lucide-react";
+import spaImage from "@assets/generated_images/luxury_spa_treatment_room.png";
 
 const spaServices = [
   {
@@ -52,6 +54,16 @@ export default function Spa() {
               Escape into a world of tranquility. Our spa offers a sanctuary where you can rejuvenate your body, calm your mind, and restore your spirit.
             </p>
           </div>
+
+          <Card className="overflow-hidden mb-12">
+            <div className="aspect-[21/9] overflow-hidden">
+              <img
+                src={spaImage}
+                alt="Luxarna Spa treatment room"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </Card>
 
           <div className="space-y-6">
             {spaServices.map((service) => (
