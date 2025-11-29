@@ -1,0 +1,62 @@
+Create a complete, responsive, luxury-themed website for Luxarna Hotel & Spa.
+Use clean HTML, CSS, and JavaScript (or React if needed).
+Make all code fully editable — no read-only or locked blocks.
+BRAND DETAILS
+•	Hotel Name: Luxarna Hotel & Spa
+•	Tagline: Your Peaceful Escape Awaits
+•	Color Theme: Lively luxury colors — rich gold accents, elegant deep blues, champagne tones, warm highlights, subtle gradients
+•	Overall Vibe: Premium, modern, calm, and elegant with dynamic motion
+HOMEPAGE REQUIREMENTS
+•	Large luxury hero section with the tagline
+•	Use dynamic animations (smooth fade-ins, hover effects, and soft transitions)
+•	Buttons (Menu, Book Now, Contact, Rooms, Spa) must feel lively and responsive with hover animations
+•	Attractive section previews: Rooms • Spa • Restaurant & Karaoke • About
+•	Clear CTA buttons: “Book Your Stay” and “Explore Rooms”
+•	Footer with contact and location
+ROOMS PAGE
+Create a clear, modern grid that lists all room types and prices:
+1.	Deluxe King Suite — 45,000 Naira
+2.	King Suite — 35,000 Naira
+3.	Deluxe Room — 25,000 Naira
+4.	Standard Room — 20,000 Naira
+Each room should include:
+•	Short description placeholder
+•	Photo placeholder
+•	“Check Availability” button
+•	Smooth hover animations
+SPA PAGE
+Include services with brief descriptions and clean pricing layout:
+•	Full Body Massage — 45,000 Naira
+•	Pedicure — 7,500 Naira
+•	Manicure — 7,500 Naira
+•	Facials — 18,000 Naira
+Use a calm, luxurious design with soft gradients and balanced spacing.
+RESTAURANT & KARAOKE BAR
+Include opening hours for meals:
+•	Breakfast: 7:00 AM – 10:30 AM
+•	Lunch: 12:00 PM – 3:00 PM
+•	Dinner: 6:00 PM – 10:00 PM
+Add:
+•	Menu placeholder
+•	Elegant layout
+•	Photo placeholders
+ABOUT PAGE
+Short story of Luxarna & core values: comfort, privacy, luxury.
+Include elegant typography and subtle animations.
+CONTACT PAGE
+Include:
+•	Contact form
+•	WhatsApp icon
+•	Phone number & email placeholders
+•	Address: Plot 13, Trunk C, Mandela Estate
+•	Simple map placeholder
+DESIGN RULES
+•	Make the homepage dynamic and lively but still luxurious
+•	Buttons should have smooth hover animations
+•	Use responsive design for mobile, tablet, and desktop
+•	Use clean, well-structured files (index.html, style.css, script.js OR React components)
+•	No premium or locked components
+•	SEO-friendly headings and structure
+•	Fast loading and clean layout throughout
+Build the full website now.
+
