@@ -9,6 +9,7 @@ import Spa from "@/pages/Spa";
 import Restaurant from "@/pages/Restaurant";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -20,6 +21,7 @@ function Router() {
       <Route path="/restaurant" component={Restaurant} />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );

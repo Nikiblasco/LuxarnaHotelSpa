@@ -1,16 +1,47 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { insertBookingSchema } from "@shared/schema";
+
+// Set timezone to Lagos
+process.env.TZ = "Africa/Lagos";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  app.get("/api/rooms", async (_req, res) => {
+    const rooms = await storage.getRooms();
+    res.json(rooms);
+  });
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  app.get("/api/bookings", async (_req, res) => {
+    const bookings = await storage.getBookings();
+    res.json(bookings);
+  });
+
+  app.post("/api/bookings", async (req, res) => {
+    const parsed = insertBookingSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error });
+    }
+
+    const { roomId, checkIn, checkOut } = parsed.data;
+    const existing = await storage.getBookings();
+    
+    const conflict = existing.find(b => 
+      b.roomId === roomId &&
+      new Date(checkIn) < new Date(b.checkOut) &&
+      new Date(checkOut) > new Date(b.checkIn)
+    );
+
+    if (conflict) {
+      return res.status(409).json({ error: "Sold Out for these dates" });
+    }
+
+    const booking = await storage.createBooking(parsed.data);
+    res.json(booking);
+  });
 
   return httpServer;
 }

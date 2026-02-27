@@ -1,87 +1,122 @@
+import { useState, useMemo } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import RoomCard from "@/components/RoomCard";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { queryClient, apiRequest } from "@/lib/queryClient";
+import { Room, Booking } from "@shared/schema";
+
 import deluxeKingSuiteImage from "@assets/room pics 2_1764432338683.webp";
 import kingSuiteImage from "@assets/Room pics_1764432345524.webp";
 import deluxeRoomImage from "@assets/1764434733686_1764435313833.jpg";
 import standardRoomImage from "@assets/generated_images/standard_hotel_room_interior.png";
 
-const rooms = [
-  {
-    name: "Deluxe King Suite",
-    price: 45000,
-    description: "Our most spacious suite featuring a luxurious king-size bed, elegant furnishings, premium bathroom with jacuzzi, and a private living area. Perfect for those seeking the ultimate in comfort and style.",
-    image: deluxeKingSuiteImage,
-    amenities: ["wifi", "parking", "breakfast", "tv", "ac", "bathroom"],
-    featured: true,
-  },
-  {
-    name: "King Suite",
-    price: 35000,
-    description: "A sophisticated suite with a comfortable king-size bed, modern decor, spacious bathroom, and premium amenities. Ideal for couples and business travelers looking for refined comfort.",
-    image: kingSuiteImage,
-    amenities: ["wifi", "parking", "tv", "ac", "bathroom"],
-    featured: false,
-  },
-  {
-    name: "Deluxe Room",
-    price: 25000,
-    description: "Elegantly appointed room with premium bedding, ambient LED lighting, stylish furnishings, and all modern amenities. A perfect balance of luxury and value.",
-    image: deluxeRoomImage,
-    amenities: ["wifi", "tv", "ac", "bathroom"],
-    featured: false,
-  },
-  {
-    name: "Standard Room",
-    price: 20000,
-    description: "Comfortable and well-equipped room featuring quality bedding, modern amenities, and everything you need for a pleasant stay. Great value without compromising on comfort.",
-    image: standardRoomImage,
-    amenities: ["wifi", "tv", "ac"],
-    featured: false,
-  },
-];
+const ROOM_IMAGES: Record<string, string> = {
+  "1": deluxeKingSuiteImage,
+  "2": kingSuiteImage,
+  "3": deluxeRoomImage,
+  "4": standardRoomImage,
+};
 
 export default function Rooms() {
+  const { toast } = useToast();
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [guestName, setGuestName] = useState("");
+
+  const { data: rooms } = useQuery<Room[]>({ queryKey: ["/api/rooms"] });
+  const { data: bookings } = useQuery<Booking[]>({ queryKey: ["/api/bookings"] });
+
+  const bookingMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest("POST", "/api/bookings", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+      toast({ title: "Booking successful!", description: "We look forward to your stay." });
+      setGuestName("");
+    },
+    onError: (err: any) => {
+      toast({ 
+        title: "Booking failed", 
+        description: err.message || "Sold Out for these dates",
+        variant: "destructive" 
+      });
+    }
+  });
+
+  const checkAvailability = (roomId: string) => {
+    if (!checkIn || !checkOut || !bookings) return true;
+    const start = new Date(checkIn);
+    const end = new Date(checkOut);
+    if (start >= end) return false;
+
+    return !bookings.some(b => 
+      b.roomId === roomId &&
+      start < new Date(b.checkOut) &&
+      end < new Date(b.checkIn)
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-
-      <section className="pt-24 md:pt-32 pb-16 md:pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12 md:mb-16">
-            <p className="text-primary font-medium tracking-widest uppercase text-sm mb-3" data-testid="text-rooms-subtitle">
-              Accommodations
-            </p>
-            <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4" data-testid="text-rooms-title">
-              Our Luxurious Rooms
-            </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto" data-testid="text-rooms-desc">
-              Each room is thoughtfully designed with your comfort in mind, featuring modern amenities and elegant decor.
-            </p>
+      <section className="pt-24 pb-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="bg-card p-6 rounded-lg shadow-sm mb-12 border">
+            <h2 className="font-serif text-2xl mb-6">Check Availability</h2>
+            <div className="grid md:grid-cols-3 gap-4 items-end">
+              <div className="space-y-2">
+                <Label>Guest Name</Label>
+                <Input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="Full Name" />
+              </div>
+              <div className="space-y-2">
+                <Label>Check-in</Label>
+                <Input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} />
+              </div>
+              <div className="space-y-2">
+                <Label>Check-out</Label>
+                <Input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} />
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
-            {rooms.map((room) => (
-              <RoomCard key={room.name} {...room} />
-            ))}
-          </div>
-
-          <div className="mt-16 bg-card rounded-lg p-8 md:p-12 text-center">
-            <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-4" data-testid="text-special-requests">
-              Special Requests?
-            </h2>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Looking for extended stays, special arrangements, or group bookings? Contact us directly and we'll create a personalized experience just for you.
-            </p>
-            <a href="/contact" className="inline-block">
-              <button className="bg-primary text-primary-foreground px-8 py-3 rounded-md font-semibold hover-elevate" data-testid="button-contact-special">
-                Contact Us
-              </button>
-            </a>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {rooms?.map((room) => {
+              const available = checkAvailability(room.id);
+              return (
+                <div key={room.id} className="relative">
+                  <RoomCard 
+                    name={room.name} 
+                    price={room.price}
+                    image={ROOM_IMAGES[room.id]}
+                    description={`${room.type} at Luxarna Hotel.`}
+                  />
+                  <div className="px-6 pb-6">
+                    <Button 
+                      className="w-full" 
+                      disabled={!available || !checkIn || !checkOut || !guestName || bookingMutation.isPending}
+                      onClick={() => bookingMutation.mutate({
+                        roomId: room.id,
+                        guestName,
+                        checkIn,
+                        checkOut
+                      })}
+                    >
+                      {available ? "Book Now" : "Sold Out for these dates"}
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
-
       <Footer />
     </div>
   );

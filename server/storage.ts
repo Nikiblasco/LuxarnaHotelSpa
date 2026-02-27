@@ -1,20 +1,41 @@
-import { type User, type InsertUser } from "@shared/schema";
+import { type User, type InsertUser, type Room, type Booking, type InsertBooking } from "@shared/schema";
 import { randomUUID } from "crypto";
+import fs from "fs";
+import path from "path";
 
-// modify the interface with any CRUD methods
-// you might need
+const DATA_DIR = path.join(process.cwd(), "data");
+const BOOKINGS_FILE = path.join(DATA_DIR, "bookings.json");
+
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR);
+}
+
+if (!fs.existsSync(BOOKINGS_FILE)) {
+  fs.writeFileSync(BOOKINGS_FILE, JSON.stringify([]));
+}
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  
+  getRooms(): Promise<Room[]>;
+  getBookings(): Promise<Booking[]>;
+  createBooking(booking: InsertBooking): Promise<Booking>;
 }
 
-export class MemStorage implements IStorage {
+export class JSONStorage implements IStorage {
   private users: Map<string, User>;
+  private rooms: Room[];
 
   constructor() {
     this.users = new Map();
+    this.rooms = [
+      { id: "1", name: "Deluxe King Suite", type: "Suite", price: 45000 },
+      { id: "2", name: "King Suite", type: "Suite", price: 35000 },
+      { id: "3", name: "Deluxe Room", type: "Room", price: 25000 },
+      { id: "4", name: "Standard Room", type: "Room", price: 20000 },
+    ];
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -22,17 +43,38 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    return Array.from(this.users.values()).find(u => u.username === username);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user = { ...insertUser, id };
     this.users.set(id, user);
     return user;
   }
+
+  async getRooms(): Promise<Room[]> {
+    return this.rooms;
+  }
+
+  async getBookings(): Promise<Booking[]> {
+    const data = fs.readFileSync(BOOKINGS_FILE, "utf-8");
+    const bookings = JSON.parse(data);
+    return bookings.map((b: any) => ({
+      ...b,
+      checkIn: b.checkIn ? new Date(b.checkIn) : null,
+      checkOut: b.checkOut ? new Date(b.checkOut) : null,
+    }));
+  }
+
+  async createBooking(insertBooking: InsertBooking): Promise<Booking> {
+    const bookings = await this.getBookings();
+    const id = randomUUID();
+    const booking = { ...insertBooking, id };
+    bookings.push(booking);
+    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2));
+    return booking;
+  }
 }
 
-export const storage = new MemStorage();
+export const storage = new JSONStorage();
