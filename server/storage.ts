@@ -58,13 +58,21 @@ export class JSONStorage implements IStorage {
   }
 
   async getBookings(): Promise<Booking[]> {
-    const data = fs.readFileSync(BOOKINGS_FILE, "utf-8");
-    const bookings = JSON.parse(data);
-    return bookings.map((b: any) => ({
-      ...b,
-      checkIn: b.checkIn ? new Date(b.checkIn) : null,
-      checkOut: b.checkOut ? new Date(b.checkOut) : null,
-    }));
+    try {
+      const data = fs.readFileSync(BOOKINGS_FILE, "utf-8");
+      if (!data || data.trim() === "") {
+        return [];
+      }
+      const bookings = JSON.parse(data);
+      return bookings.map((b: any) => ({
+        ...b,
+        checkIn: b.checkIn ? new Date(b.checkIn) : null,
+        checkOut: b.checkOut ? new Date(b.checkOut) : null,
+      }));
+    } catch (e) {
+      console.error("Error reading bookings file:", e);
+      return [];
+    }
   }
 
   async createBooking(insertBooking: InsertBooking): Promise<Booking> {
