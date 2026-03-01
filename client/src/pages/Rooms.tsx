@@ -50,17 +50,25 @@ export default function Rooms() {
     }
   });
 
-  const checkAvailability = (roomId: string) => {
-    if (!checkIn || !checkOut || !bookings) return true;
+  const getAvailabilityStatus = (roomId: string) => {
+    if (!checkIn || !checkOut) return { status: "no_dates", message: "Please select dates first", color: "text-muted-foreground" };
+    if (!bookings) return { status: "loading", message: "Checking...", color: "text-muted-foreground" };
+    
     const start = new Date(checkIn);
     const end = new Date(checkOut);
-    if (start >= end) return false;
+    
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return { status: "invalid", message: "Invalid dates", color: "text-destructive" };
+    if (start >= end) return { status: "invalid", message: "Check-out must be after check-in", color: "text-destructive" };
 
-    return !bookings.some(b => 
+    const isOccupied = bookings.some(b => 
       b.roomId === roomId &&
       start < new Date(b.checkOut) &&
-      end < new Date(b.checkIn)
+      end > new Date(b.checkIn)
     );
+
+    return isOccupied 
+      ? { status: "occupied", message: "Sold Out for these dates", color: "text-destructive" }
+      : { status: "available", message: "Available", color: "text-green-600 dark:text-green-400" };
   };
 
   return (
@@ -88,19 +96,26 @@ export default function Rooms() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {rooms?.map((room) => {
-              const available = checkAvailability(room.id);
+              const availability = getAvailabilityStatus(room.id);
+              const isAvailable = availability.status === "available";
+              
               return (
-                <div key={room.id} className="relative">
-                  <RoomCard 
-                    name={room.name} 
-                    price={room.price}
-                    image={ROOM_IMAGES[room.id]}
-                    description={`${room.type} at Luxarna Hotel.`}
-                  />
-                  <div className="px-6 pb-6">
+                <div key={room.id} className="relative flex flex-col">
+                  <div className="flex-1">
+                    <RoomCard 
+                      name={room.name} 
+                      price={room.price}
+                      image={ROOM_IMAGES[room.id]}
+                      description={`${room.type} at Luxarna Hotel.`}
+                    />
+                  </div>
+                  <div className="px-6 pb-6 bg-card border-x border-b rounded-b-lg -mt-2 space-y-3">
+                    <p className={`text-sm font-semibold ${availability.color}`}>
+                      {availability.message}
+                    </p>
                     <Button 
                       className="w-full" 
-                      disabled={!available || !checkIn || !checkOut || !guestName || bookingMutation.isPending}
+                      disabled={!isAvailable || !guestName || bookingMutation.isPending}
                       onClick={() => bookingMutation.mutate({
                         roomId: room.id,
                         guestName,
@@ -108,7 +123,7 @@ export default function Rooms() {
                         checkOut
                       })}
                     >
-                      {available ? "Book Now" : "Sold Out for these dates"}
+                      {availability.status === "occupied" ? "Sold Out" : "Book Now"}
                     </Button>
                   </div>
                 </div>

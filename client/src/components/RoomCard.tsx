@@ -73,10 +73,6 @@ export default function RoomCard({ name, price, description, image, amenities = 
             })}
           </div>
         )}
-
-        <Button className="w-full mt-4" data-testid={`button-check-availability-${name.toLowerCase().replace(/\s+/g, '-')}`}>
-          Check Availability
-        </Button>
       </div>
     </Card>
   );
