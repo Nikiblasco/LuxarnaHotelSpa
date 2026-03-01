@@ -52,9 +52,11 @@ export default function RoomCard({ name, price, description, image, amenities = 
         <h3 className="font-serif text-xl md:text-2xl font-bold text-foreground" data-testid={`text-room-name-${name.toLowerCase().replace(/\s+/g, '-')}`}>
           {name}
         </h3>
-        <p className="text-muted-foreground text-sm leading-relaxed" data-testid={`text-room-desc-${name.toLowerCase().replace(/\s+/g, '-')}`}>
-          {description}
-        </p>
+        {description && (
+          <p className="text-muted-foreground text-sm leading-relaxed" data-testid={`text-room-desc-${name.toLowerCase().replace(/\s+/g, '-')}`}>
+            {description}
+          </p>
+        )}
         
         {amenities.length > 0 && (
           <div className="flex flex-wrap gap-3 pt-2">

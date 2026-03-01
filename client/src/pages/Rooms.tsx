@@ -106,15 +106,14 @@ export default function Rooms() {
                       name={room.name} 
                       price={room.price}
                       image={ROOM_IMAGES[room.id]}
-                      description={`${room.type} at Luxarna Hotel.`}
                     />
                   </div>
-                  <div className="px-6 pb-6 bg-card border-x border-b rounded-b-lg -mt-2 space-y-3">
+                  <div className="px-6 pb-6 bg-card border-x border-b rounded-b-lg -mt-2 space-y-4 flex flex-col items-center text-center">
                     <p className={`text-sm font-semibold ${availability.color}`}>
-                      {availability.message}
+                      ₦{availability.message}
                     </p>
                     <Button 
-                      className="w-full" 
+                      className="w-full max-w-[200px]" 
                       disabled={!isAvailable || !guestName || bookingMutation.isPending}
                       onClick={() => bookingMutation.mutate({
                         roomId: room.id,
