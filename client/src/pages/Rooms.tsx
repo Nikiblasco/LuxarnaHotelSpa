@@ -108,12 +108,12 @@ export default function Rooms() {
                       image={ROOM_IMAGES[room.id]}
                     />
                   </div>
-                  <div className="px-6 pb-6 bg-card border-x border-b rounded-b-lg -mt-2 space-y-4 flex flex-col items-center text-center">
-                    <p className={`text-sm font-semibold ${availability.color}`}>
-                      ₦{availability.message}
+                  <div className="px-4 py-3 bg-card border-x border-b rounded-b-lg -mt-2 flex flex-col items-center gap-2 text-center">
+                    <p className={`text-xs font-semibold ${availability.color}`}>
+                      {availability.message}
                     </p>
                     <Button 
-                      className="w-full max-w-[200px]" 
+                      className="w-full" 
                       disabled={!isAvailable || !guestName || bookingMutation.isPending}
                       onClick={() => bookingMutation.mutate({
                         roomId: room.id,
