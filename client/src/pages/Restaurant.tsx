@@ -80,13 +80,16 @@ export default function Restaurant() {
 
               <div className="space-y-4">
                 {mealTimes.map((meal, index) => (
-                  <Card key={meal.name} className="p-4 flex items-center gap-4" data-testid={`card-meal-${index}`}>
+                  <Card key={meal.name} className="p-4 flex items-start gap-4" data-testid={`card-meal-${index}`}>
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <Clock className="w-5 h-5 text-primary" />
                     </div>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <h3 className="font-semibold text-foreground">{meal.name}</h3>
-                      <span className="text-primary font-medium text-sm">{meal.time}</span>
+                    <div>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h3 className="font-semibold text-foreground">{meal.name}</h3>
+                        <span className="text-primary font-medium text-sm">{meal.time}</span>
+                      </div>
+                      <p className="text-muted-foreground text-sm mt-1">{meal.description}</p>
                     </div>
                   </Card>
                 ))}
