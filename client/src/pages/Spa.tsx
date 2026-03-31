@@ -8,30 +8,30 @@ import spaImage from "@assets/generated_images/luxury_spa_treatment_room.png";
 const spaServices = [
   {
     name: "Full Body Massage",
-    price: 45000,
+    price: 40000,
     description: "Indulge in our signature full body massage that combines traditional techniques with modern relaxation therapy. Release tension, improve circulation, and leave feeling completely renewed.",
-    duration: "90 minutes",
+    duration: "45 minutes",
     icon: Sparkles,
   },
   {
     name: "Facials",
-    price: 18000,
+    price: 30000,
     description: "Rejuvenate your skin with our premium facial treatments. Using high-quality products, our specialists will cleanse, exfoliate, and nourish your skin for a radiant glow.",
-    duration: "60 minutes",
     icon: Heart,
+    duration: "30 minutes",
   },
   {
     name: "Pedicure",
     price: 7500,
     description: "Treat your feet to our relaxing pedicure service. Includes foot soak, exfoliation, nail care, and massage for beautifully pampered feet.",
-    duration: "45 minutes",
+    duration: "45-60 minutes",
     icon: Footprints,
   },
   {
     name: "Manicure",
     price: 7500,
     description: "Experience our professional manicure service featuring nail shaping, cuticle care, hand massage, and your choice of polish for elegant, well-groomed hands.",
-    duration: "30 minutes",
+    duration: "25-30 minutes",
     icon: Hand,
   },
 ];

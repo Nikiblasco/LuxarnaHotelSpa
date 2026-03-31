@@ -9,17 +9,14 @@ const mealTimes = [
   {
     name: "Breakfast",
     time: "7:00 AM – 10:30 AM",
-    description: "Start your day with our continental and local breakfast offerings",
   },
   {
     name: "Lunch",
     time: "12:00 PM – 3:00 PM",
-    description: "Enjoy a variety of cuisines from our extensive lunch menu",
   },
   {
     name: "Dinner",
     time: "6:00 PM – 10:00 PM",
-    description: "Savor exquisite dinner selections in an elegant ambiance",
   },
 ];
 
@@ -53,7 +50,7 @@ export default function Restaurant() {
               Restaurant & Karaoke Bar
             </h1>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto" data-testid="text-restaurant-desc">
-              Experience fine dining and vibrant entertainment at Luxarna. From gourmet meals to unforgettable karaoke nights, we have it all.
+              We offer tasty local dishes and a chance to chanel your inner superstar.
             </p>
           </div>
 
@@ -83,16 +80,13 @@ export default function Restaurant() {
 
               <div className="space-y-4">
                 {mealTimes.map((meal, index) => (
-                  <Card key={meal.name} className="p-4 flex items-start gap-4" data-testid={`card-meal-${index}`}>
+                  <Card key={meal.name} className="p-4 flex items-center gap-4" data-testid={`card-meal-${index}`}>
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <Clock className="w-5 h-5 text-primary" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <h3 className="font-semibold text-foreground">{meal.name}</h3>
-                        <span className="text-primary font-medium text-sm">{meal.time}</span>
-                      </div>
-                      <p className="text-muted-foreground text-sm mt-1">{meal.description}</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h3 className="font-semibold text-foreground">{meal.name}</h3>
+                      <span className="text-primary font-medium text-sm">{meal.time}</span>
                     </div>
                   </Card>
                 ))}
