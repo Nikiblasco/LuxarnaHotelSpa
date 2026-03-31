@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -20,6 +20,26 @@ const ROOM_IMAGES: Record<string, string> = {
   "2": kingSuiteImage,
   "3": deluxeRoomImage,
   "4": standardRoomImage,
+};
+
+const ROOM_DETAILS: Record<string, { description: string; amenities: string[]; featured?: boolean }> = {
+  "1": {
+    description: "Our most prestigious accommodation — a sprawling king suite with panoramic views, a private sitting lounge, and premium finishes throughout. Perfect for a truly indulgent stay.",
+    amenities: ["wifi", "ac", "tv", "bathroom", "breakfast", "parking"],
+    featured: true,
+  },
+  "2": {
+    description: "A sophisticated king suite blending modern elegance with warm Nigerian hospitality. Spacious, serene, and designed for ultimate comfort.",
+    amenities: ["wifi", "ac", "tv", "bathroom", "breakfast"],
+  },
+  "3": {
+    description: "A beautifully appointed deluxe room offering generous space, refined décor, and all the comforts you need for a relaxing and productive stay.",
+    amenities: ["wifi", "ac", "tv", "bathroom"],
+  },
+  "4": {
+    description: "Smart, comfortable, and thoughtfully furnished — our standard room delivers excellent value with everything you need for a pleasant night's rest.",
+    amenities: ["wifi", "ac", "tv"],
+  },
 };
 
 export default function Rooms() {
@@ -106,6 +126,9 @@ export default function Rooms() {
                       name={room.name} 
                       price={room.price}
                       image={ROOM_IMAGES[room.id]}
+                      description={ROOM_DETAILS[room.id]?.description ?? ""}
+                      amenities={ROOM_DETAILS[room.id]?.amenities ?? []}
+                      featured={ROOM_DETAILS[room.id]?.featured}
                     />
                   </div>
                   <div className="px-4 py-3 bg-card border-x border-b rounded-b-lg -mt-2 flex flex-col items-center gap-2 text-center">
