@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, UtensilsCrossed, Music, Wine } from "lucide-react";
-import restaurantImage from "@assets/generated_images/luxury_restaurant_and_bar.png";
+import restaurantImage from "@assets/LUXARNA_RESTAURANT_1774999476903.png";
 
 const mealTimes = [
   { name: "Breakfast", time: "7:00 AM – 10:30 AM" },
