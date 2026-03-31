@@ -6,18 +6,9 @@ import { Clock, UtensilsCrossed, Music, Wine } from "lucide-react";
 import restaurantImage from "@assets/generated_images/luxury_restaurant_and_bar.png";
 
 const mealTimes = [
-  {
-    name: "Breakfast",
-    time: "7:00 AM – 10:30 AM",
-  },
-  {
-    name: "Lunch",
-    time: "12:00 PM – 3:00 PM",
-  },
-  {
-    name: "Dinner",
-    time: "6:00 PM – 10:00 PM",
-  },
+  { name: "Breakfast", time: "7:00 AM – 10:30 AM" },
+  { name: "Lunch",     time: "12:00 PM – 3:00 PM" },
+  { name: "Dinner",    time: "6:00 PM – 10:00 PM" },
 ];
 
 const menuCategories = [
@@ -80,16 +71,13 @@ export default function Restaurant() {
 
               <div className="space-y-4">
                 {mealTimes.map((meal, index) => (
-                  <Card key={meal.name} className="p-4 flex items-start gap-4" data-testid={`card-meal-${index}`}>
+                  <Card key={meal.name} className="p-4 flex items-center gap-4" data-testid={`card-meal-${index}`}>
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                       <Clock className="w-5 h-5 text-primary" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-3 flex-wrap">
-                        <h3 className="font-semibold text-foreground">{meal.name}</h3>
-                        <span className="text-primary font-medium text-sm">{meal.time}</span>
-                      </div>
-                      <p className="text-muted-foreground text-sm mt-1">{meal.description}</p>
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <h3 className="font-semibold text-foreground">{meal.name}</h3>
+                      <span className="text-primary font-medium text-sm">{meal.time}</span>
                     </div>
                   </Card>
                 ))}
