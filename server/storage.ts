@@ -1,4 +1,10 @@
-import { type User, type InsertUser, type Room, type Booking, type InsertBooking } from "@shared/schema";
+import {
+  type User,
+  type InsertUser,
+  type Room,
+  type Booking,
+  type InsertBooking,
+} from "@shared/schema";
 import { randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
@@ -18,7 +24,7 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
-  
+
   getRooms(): Promise<Room[]>;
   getBookings(): Promise<Booking[]>;
   createBooking(booking: InsertBooking): Promise<Booking>;
@@ -31,10 +37,10 @@ export class JSONStorage implements IStorage {
   constructor() {
     this.users = new Map();
     this.rooms = [
-      { id: "1", name: "Deluxe King Suite", type: "Suite", price: 45000 },
-      { id: "2", name: "King Suite", type: "Suite", price: 35000 },
-      { id: "3", name: "Deluxe Room", type: "Room", price: 25000 },
-      { id: "4", name: "Standard Room", type: "Room", price: 20000 },
+      { id: "1", name: "Deluxe King Suite", type: "Suite", price: 50000 },
+      { id: "2", name: "King Suite", type: "Suite", price: 40000 },
+      { id: "3", name: "Deluxe Room", type: "Room", price: 30000 },
+      { id: "4", name: "Standard Room", type: "Room", price: 23000 },
     ];
   }
 
@@ -43,7 +49,7 @@ export class JSONStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(u => u.username === username);
+    return Array.from(this.users.values()).find((u) => u.username === username);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
