@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ArrowRight, Bed, Sparkles, UtensilsCrossed, Heart } from "lucide-react";
 import roomImage1 from "@assets/room pics 2_1764432338683.webp";
 import spaImage from "@assets/generated_images/luxury_spa_treatment_room.png";
-import restaurantImage from "@assets/generated_images/luxury_restaurant_and_bar.png";
+import restaurantImage from "@assets/LUXARNA_RESTAURANT_1774999476903.png";
 import heroImage from "@assets/luxarna-hotel-and-s-ng-port-harcourt-bc-15089961-0_1764432368085.jpg";
 
 const sections = [
