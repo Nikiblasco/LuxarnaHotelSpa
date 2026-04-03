@@ -38,8 +38,8 @@ export class JSONStorage implements IStorage {
   constructor() {
     this.users = new Map();
     this.rooms = [
-      { id: "206", name: "Deluxe King Suite", type: "Deluxe King Suite", price: 50000 },
-      { id: "204", name: "King Suite",         type: "King Suite",        price: 40000 },
+      { id: "206", name: "King Suite",   type: "King Suite",   price: 50000 },
+      { id: "204", name: "Queen Suite", type: "Queen Suite", price: 40000 },
       { id: "101", name: "Deluxe Room 101",    type: "Deluxe Room",       price: 30000 },
       { id: "102", name: "Deluxe Room 102",    type: "Deluxe Room",       price: 30000 },
       { id: "201", name: "Deluxe Room 201",    type: "Deluxe Room",       price: 30000 },

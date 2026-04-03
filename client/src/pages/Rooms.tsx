@@ -10,26 +10,26 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Room, Booking } from "@shared/schema";
 
-import deluxeKingSuiteImage from "@assets/room pics 2_1764432338683.webp";
-import kingSuiteImage from "@assets/Room pics_1764432345524.webp";
+import KingSuiteImage from "@assets/room pics 2_1764432338683.webp";
+import QueenSuiteImage from "@assets/Room pics_1764432345524.webp";
 import deluxeRoomImage from "@assets/1764434733686_1764435313833.jpg";
 import standardRoomImage from "@assets/generated_images/standard_hotel_room_interior.png";
 
 const TYPE_IMAGES: Record<string, string> = {
-  "Deluxe King Suite": deluxeKingSuiteImage,
-  "King Suite":        kingSuiteImage,
-  "Deluxe Room":       deluxeRoomImage,
-  "Standard Room":     standardRoomImage,
+  "King Suite":    KingSuiteImage,
+  "Queen Suite":   QueenSuiteImage,
+  "Deluxe Room":   deluxeRoomImage,
+  "Standard Room": standardRoomImage,
 };
 
 const TYPE_DETAILS: Record<string, { description: string; amenities: string[]; featured?: boolean }> = {
-  "Deluxe King Suite": {
+  "King Suite": {
     description: "Our most prestigious accommodation — a sprawling king suite with panoramic views, a private sitting lounge, and premium finishes throughout. Perfect for a truly indulgent stay.",
     amenities: ["wifi", "ac", "tv", "bathroom", "breakfast", "parking"],
     featured: true,
   },
-  "King Suite": {
-    description: "A sophisticated king suite blending modern elegance with warm Nigerian hospitality. Spacious, serene, and designed for ultimate comfort.",
+  "Queen Suite": {
+    description: "A sophisticated Queen suite blending modern elegance with warm Nigerian hospitality. Spacious, serene, and designed for ultimate comfort.",
     amenities: ["wifi", "ac", "tv", "bathroom", "breakfast"],
   },
   "Deluxe Room": {
@@ -42,7 +42,7 @@ const TYPE_DETAILS: Record<string, { description: string; amenities: string[]; f
   },
 };
 
-const TYPE_ORDER = ["Deluxe King Suite", "King Suite", "Deluxe Room", "Standard Room"];
+const TYPE_ORDER = ["King Suite", "Queen Suite", "Deluxe Room", "Standard Room"];
 
 export default function Rooms() {
   const { toast } = useToast();

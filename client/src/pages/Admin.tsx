@@ -96,13 +96,13 @@ export default function Admin() {
                 onChange={e => setRoomId(e.target.value)}
               >
                 <option value="">Select Room</option>
-                <optgroup label="Deluxe King Suite">
-                  {rooms?.filter(r => r.type === "Deluxe King Suite").map(r => (
+                <optgroup label="King Suite">
+                  {rooms?.filter(r => r.type === "King Suite").map(r => (
                     <option key={r.id} value={r.id}>Room {r.id} — {r.type}</option>
                   ))}
                 </optgroup>
-                <optgroup label="King Suite">
-                  {rooms?.filter(r => r.type === "King Suite").map(r => (
+                <optgroup label="Queen Suite">
+                  {rooms?.filter(r => r.type === "Queen Suite").map(r => (
                     <option key={r.id} value={r.id}>Room {r.id} — {r.type}</option>
                   ))}
                 </optgroup>
