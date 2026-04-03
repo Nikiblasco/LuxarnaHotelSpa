@@ -28,6 +28,7 @@ export interface IStorage {
   getRooms(): Promise<Room[]>;
   getBookings(): Promise<Booking[]>;
   createBooking(booking: InsertBooking): Promise<Booking>;
+  deleteBooking(id: string): Promise<boolean>;
 }
 
 export class JSONStorage implements IStorage {
@@ -90,6 +91,15 @@ export class JSONStorage implements IStorage {
     bookings.push(booking);
     fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2));
     return booking;
+  }
+
+  async deleteBooking(id: string): Promise<boolean> {
+    const bookings = await this.getBookings();
+    const index = bookings.findIndex((b) => b.id === id);
+    if (index === -1) return false;
+    bookings.splice(index, 1);
+    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2));
+    return true;
   }
 }
 

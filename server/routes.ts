@@ -20,6 +20,13 @@ export async function registerRoutes(
     res.json(bookings);
   });
 
+  app.delete("/api/bookings/:id", async (req, res) => {
+    const { id } = req.params;
+    const deleted = await storage.deleteBooking(id);
+    if (!deleted) return res.status(404).json({ error: "Booking not found" });
+    res.json({ success: true });
+  });
+
   app.post("/api/bookings", async (req, res) => {
     const parsed = insertBookingSchema.safeParse(req.body);
     if (!parsed.success) {

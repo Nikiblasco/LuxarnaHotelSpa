@@ -42,6 +42,20 @@ export default function Admin() {
     }
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await apiRequest("DELETE", `/api/bookings/${id}`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+      toast({ title: "Booking cancelled successfully" });
+    },
+    onError: () => {
+      toast({ title: "Failed to cancel booking", variant: "destructive" });
+    }
+  });
+
   if (!isAuth) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
@@ -114,17 +128,33 @@ export default function Admin() {
                   <tr>
                     <th className="p-3">Guest</th>
                     <th className="p-3">Room</th>
-                    <th className="p-3">In</th>
-                    <th className="p-3">Out</th>
+                    <th className="p-3">Check-in</th>
+                    <th className="p-3">Check-out</th>
+                    <th className="p-3">Action</th>
                   </tr>
                 </thead>
                 <tbody>
+                  {bookings && bookings.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="p-6 text-center text-muted-foreground">No bookings yet</td>
+                    </tr>
+                  )}
                   {bookings?.map(b => (
                     <tr key={b.id} className="border-b">
-                      <td className="p-3">{b.guestName}</td>
+                      <td className="p-3 font-medium">{b.guestName}</td>
                       <td className="p-3">{rooms?.find(r => r.id === b.roomId)?.name}</td>
                       <td className="p-3">{format(new Date(b.checkIn), "MMM dd, yyyy")}</td>
                       <td className="p-3">{format(new Date(b.checkOut), "MMM dd, yyyy")}</td>
+                      <td className="p-3">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          disabled={cancelMutation.isPending}
+                          onClick={() => cancelMutation.mutate(b.id)}
+                        >
+                          Cancel
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
