@@ -28,7 +28,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   password: true,
 });
 
-export const insertBookingSchema = createInsertSchema(bookings).extend({
+export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true }).extend({
   checkIn: z.coerce.date(),
   checkOut: z.coerce.date(),
 });
