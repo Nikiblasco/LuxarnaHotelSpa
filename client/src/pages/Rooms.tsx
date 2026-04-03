@@ -15,40 +15,42 @@ import kingSuiteImage from "@assets/Room pics_1764432345524.webp";
 import deluxeRoomImage from "@assets/1764434733686_1764435313833.jpg";
 import standardRoomImage from "@assets/generated_images/standard_hotel_room_interior.png";
 
-const ROOM_IMAGES: Record<string, string> = {
-  "1": deluxeKingSuiteImage,
-  "2": kingSuiteImage,
-  "3": deluxeRoomImage,
-  "4": standardRoomImage,
+const TYPE_IMAGES: Record<string, string> = {
+  "Deluxe King Suite": deluxeKingSuiteImage,
+  "King Suite":        kingSuiteImage,
+  "Deluxe Room":       deluxeRoomImage,
+  "Standard Room":     standardRoomImage,
 };
 
-const ROOM_DETAILS: Record<string, { description: string; amenities: string[]; featured?: boolean }> = {
-  "1": {
+const TYPE_DETAILS: Record<string, { description: string; amenities: string[]; featured?: boolean }> = {
+  "Deluxe King Suite": {
     description: "Our most prestigious accommodation — a sprawling king suite with panoramic views, a private sitting lounge, and premium finishes throughout. Perfect for a truly indulgent stay.",
     amenities: ["wifi", "ac", "tv", "bathroom", "breakfast", "parking"],
     featured: true,
   },
-  "2": {
+  "King Suite": {
     description: "A sophisticated king suite blending modern elegance with warm Nigerian hospitality. Spacious, serene, and designed for ultimate comfort.",
     amenities: ["wifi", "ac", "tv", "bathroom", "breakfast"],
   },
-  "3": {
+  "Deluxe Room": {
     description: "A beautifully appointed deluxe room offering generous space, refined décor, and all the comforts you need for a relaxing and productive stay.",
     amenities: ["wifi", "ac", "tv", "bathroom"],
   },
-  "4": {
+  "Standard Room": {
     description: "Smart, comfortable, and thoughtfully furnished — our standard room delivers excellent value with everything you need for a pleasant night's rest.",
     amenities: ["wifi", "ac", "tv"],
   },
 };
 
+const TYPE_ORDER = ["Deluxe King Suite", "King Suite", "Deluxe Room", "Standard Room"];
+
 export default function Rooms() {
   const { toast } = useToast();
-  const [checkIn, setCheckIn] = useState("");
+  const [checkIn, setCheckIn]   = useState("");
   const [checkOut, setCheckOut] = useState("");
   const [guestName, setGuestName] = useState("");
 
-  const { data: rooms } = useQuery<Room[]>({ queryKey: ["/api/rooms"] });
+  const { data: rooms }    = useQuery<Room[]>({ queryKey: ["/api/rooms"] });
   const { data: bookings } = useQuery<Booking[]>({ queryKey: ["/api/bookings"] });
 
   const bookingMutation = useMutation({
@@ -62,34 +64,51 @@ export default function Rooms() {
       setGuestName("");
     },
     onError: (err: any) => {
-      toast({ 
-        title: "Booking failed", 
+      toast({
+        title: "Booking failed",
         description: err.message || "Sold Out for these dates",
-        variant: "destructive" 
+        variant: "destructive",
       });
-    }
+    },
   });
 
-  const getAvailabilityStatus = (roomId: string) => {
-    if (!checkIn || !checkOut) return { status: "no_dates", message: "Please select dates first", color: "text-muted-foreground" };
-    if (!bookings) return { status: "loading", message: "Checking...", color: "text-muted-foreground" };
-    
+  const isRoomBooked = (roomId: string) => {
+    if (!bookings || !checkIn || !checkOut) return false;
     const start = new Date(checkIn);
-    const end = new Date(checkOut);
-    
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) return { status: "invalid", message: "Invalid dates", color: "text-destructive" };
-    if (start >= end) return { status: "invalid", message: "Check-out must be after check-in", color: "text-destructive" };
-
-    const isOccupied = bookings.some(b => 
-      b.roomId === roomId &&
-      start < new Date(b.checkOut) &&
-      end > new Date(b.checkIn)
+    const end   = new Date(checkOut);
+    return bookings.some(
+      b =>
+        b.roomId === roomId &&
+        start < new Date(b.checkOut) &&
+        end   > new Date(b.checkIn)
     );
-
-    return isOccupied 
-      ? { status: "occupied", message: "Sold Out for these dates", color: "text-destructive" }
-      : { status: "available", message: "Available", color: "text-green-600 dark:text-green-400" };
   };
+
+  const getTypeAvailability = (roomsOfType: Room[]) => {
+    const total = roomsOfType.length;
+
+    if (!checkIn || !checkOut) {
+      return { status: "no_dates" as const, availableRooms: roomsOfType, count: total, total };
+    }
+
+    const start = new Date(checkIn);
+    const end   = new Date(checkOut);
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
+      return { status: "invalid" as const, availableRooms: [], count: 0, total };
+    }
+
+    const availableRooms = roomsOfType.filter(r => !isRoomBooked(r.id));
+    return {
+      status: availableRooms.length === 0 ? ("occupied" as const) : ("available" as const),
+      availableRooms,
+      count: availableRooms.length,
+      total,
+    };
+  };
+
+  const roomsByType = rooms
+    ? TYPE_ORDER.map(type => ({ type, rooms: rooms.filter(r => r.type === type) })).filter(g => g.rooms.length > 0)
+    : [];
 
   return (
     <div className="min-h-screen bg-background">
@@ -115,37 +134,72 @@ export default function Rooms() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {rooms?.map((room) => {
-              const availability = getAvailabilityStatus(room.id);
-              const isAvailable = availability.status === "available";
-              
+            {roomsByType.map(({ type, rooms: roomsOfType }) => {
+              const avail      = getTypeAvailability(roomsOfType);
+              const isMultiple = roomsOfType.length > 1;
+              const isAvailable = avail.status === "available";
+              const price      = roomsOfType[0]?.price ?? 0;
+
+              const badgeClass =
+                avail.status === "no_dates"
+                  ? "bg-muted text-muted-foreground"
+                  : avail.count === 0
+                  ? "bg-destructive/10 text-destructive"
+                  : avail.count <= 2
+                  ? "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400"
+                  : "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400";
+
+              const singleStatusColor =
+                avail.status === "no_dates" || avail.status === "invalid"
+                  ? "text-muted-foreground"
+                  : avail.status === "occupied"
+                  ? "text-destructive"
+                  : "text-green-600 dark:text-green-400";
+
+              const singleStatusText =
+                avail.status === "no_dates"  ? "Please select dates first" :
+                avail.status === "invalid"   ? "Check-out must be after check-in" :
+                avail.status === "occupied"  ? "Sold Out for these dates" :
+                "Available";
+
               return (
-                <div key={room.id} className="relative flex flex-col">
+                <div key={type} className="relative flex flex-col">
                   <div className="flex-1">
-                    <RoomCard 
-                      name={room.name} 
-                      price={room.price}
-                      image={ROOM_IMAGES[room.id]}
-                      description={ROOM_DETAILS[room.id]?.description ?? ""}
-                      amenities={ROOM_DETAILS[room.id]?.amenities ?? []}
-                      featured={ROOM_DETAILS[room.id]?.featured}
+                    <RoomCard
+                      name={type}
+                      price={price}
+                      image={TYPE_IMAGES[type]}
+                      description={TYPE_DETAILS[type]?.description ?? ""}
+                      amenities={TYPE_DETAILS[type]?.amenities ?? []}
+                      featured={TYPE_DETAILS[type]?.featured}
                     />
                   </div>
+
                   <div className="px-4 py-3 bg-card border-x border-b rounded-b-lg -mt-2 flex flex-col items-center gap-2 text-center">
-                    <p className={`text-xs font-semibold ${availability.color}`}>
-                      {availability.message}
-                    </p>
-                    <Button 
-                      className="w-full" 
+                    {isMultiple ? (
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full ${badgeClass}`}>
+                        {avail.status === "no_dates"
+                          ? `${avail.total} rooms available`
+                          : avail.count === 0
+                          ? `All ${avail.total} rooms fully booked`
+                          : `${avail.count} of ${avail.total} rooms remaining`}
+                      </span>
+                    ) : (
+                      <p className={`text-xs font-semibold ${singleStatusColor}`}>
+                        {singleStatusText}
+                      </p>
+                    )}
+
+                    <Button
+                      className="w-full"
                       disabled={!isAvailable || !guestName || bookingMutation.isPending}
-                      onClick={() => bookingMutation.mutate({
-                        roomId: room.id,
-                        guestName,
-                        checkIn,
-                        checkOut
-                      })}
+                      onClick={() => {
+                        const roomToBook = avail.availableRooms[0];
+                        if (!roomToBook) return;
+                        bookingMutation.mutate({ roomId: roomToBook.id, guestName, checkIn, checkOut });
+                      }}
                     >
-                      {availability.status === "occupied" ? "Sold Out" : "Book Now"}
+                      {avail.status === "occupied" ? "Sold Out" : "Book Now"}
                     </Button>
                   </div>
                 </div>
