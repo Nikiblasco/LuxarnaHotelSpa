@@ -22,7 +22,22 @@ export default function Restaurant() {
               className="text-primary font-medium tracking-widest uppercase text-sm mb-3"
               data-testid="text-restaurant-subtitle"
             >
-              Dining & Entertainment
+              <button
+                className="
+                 bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#B8860B] 
+                 text-black font-serif font-bold text-xl uppercase tracking-widest
+                 py-6 px-10 
+                 rounded-none 
+                 shadow-[5px_5px_15px_rgba(0,0,0,0.4)]
+                 border-2 border-[#996515]
+                 transition-all duration-300 ease-in-out
+                 hover:scale-105 hover:brightness-110
+                 active:scale-95
+                 text-center
+                "
+              >
+                Book a Table <br /> Now
+              </button>
             </p>
             <h1
               className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4"
