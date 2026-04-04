@@ -51,5 +51,82 @@ export async function registerRoutes(
     res.json(booking);
   });
 
+  // Paystack: Initialize transaction
+  app.post("/paystack/initialize", async (req, res) => {
+    const { email, amount } = req.body as { email: string; amount: number };
+
+    if (!email || !amount) {
+      return res.status(400).json({ error: "email and amount are required" });
+    }
+
+    const secretKey = process.env.PAYSTACK_SECRET_KEY;
+    if (!secretKey) {
+      return res.status(500).json({ error: "Paystack secret key not configured" });
+    }
+
+    try {
+      const response = await axios.post<{
+        status: boolean;
+        message: string;
+        data: { authorization_url: string; access_code: string; reference: string };
+      }>(
+        "https://api.paystack.co/transaction/initialize",
+        { email, amount: Math.round(amount * 100) },
+        {
+          headers: {
+            Authorization: `Bearer ${secretKey}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      return res.json({
+        authorization_url: response.data.data.authorization_url,
+        access_code: response.data.data.access_code,
+        reference: response.data.data.reference,
+      });
+    } catch (err: any) {
+      const message = err.response?.data?.message ?? err.message ?? "Paystack error";
+      return res.status(502).json({ error: message });
+    }
+  });
+
+  // Paystack: Verify transaction
+  app.get("/paystack/verify/:reference", async (req, res) => {
+    const { reference } = req.params;
+
+    const secretKey = process.env.PAYSTACK_SECRET_KEY;
+    if (!secretKey) {
+      return res.status(500).json({ error: "Paystack secret key not configured" });
+    }
+
+    try {
+      const response = await axios.get<{
+        status: boolean;
+        message: string;
+        data: {
+          status: string;
+          reference: string;
+          amount: number;
+          currency: string;
+          customer: { email: string };
+        };
+      }>(
+        `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${secretKey}`,
+          },
+        }
+      );
+
+      const { status, reference: ref, amount, currency, customer } = response.data.data;
+      return res.json({ status, reference: ref, amount, currency, email: customer.email });
+    } catch (err: any) {
+      const message = err.response?.data?.message ?? err.message ?? "Paystack error";
+      return res.status(502).json({ error: message });
+    }
+  });
+
   return httpServer;
 }
