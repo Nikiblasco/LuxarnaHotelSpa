@@ -1,0 +1,11 @@
+[
+  {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "room": "King Suite",
+    "amount": 50000,
+    "reference": "test_ref_001",
+    "id": "6bf475f9-3bee-424e-aba0-5f07f46f9b02",
+    "paidAt": "2026-04-04T15:19:32.825Z"
+  }
+]

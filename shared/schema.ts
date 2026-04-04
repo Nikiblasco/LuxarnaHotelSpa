@@ -33,8 +33,18 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true 
   checkOut: z.coerce.date(),
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-export type Room = typeof rooms.$inferSelect;
-export type Booking = typeof bookings.$inferSelect;
-export type InsertBooking = z.infer<typeof insertBookingSchema>;
+export const insertPaymentBookingSchema = z.object({
+  name:      z.string().min(1),
+  email:     z.string().email(),
+  room:      z.string().min(1),
+  amount:    z.number().positive(),
+  reference: z.string().min(1),
+});
+
+export type InsertUser           = z.infer<typeof insertUserSchema>;
+export type User                 = typeof users.$inferSelect;
+export type Room                 = typeof rooms.$inferSelect;
+export type Booking              = typeof bookings.$inferSelect;
+export type InsertBooking        = z.infer<typeof insertBookingSchema>;
+export type InsertPaymentBooking = z.infer<typeof insertPaymentBookingSchema>;
+export type PaymentBooking       = InsertPaymentBooking & { id: string; paidAt: string };

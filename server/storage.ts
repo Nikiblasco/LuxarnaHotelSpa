@@ -4,13 +4,16 @@ import {
   type Room,
   type Booking,
   type InsertBooking,
+  type InsertPaymentBooking,
+  type PaymentBooking,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import fs from "fs";
 import path from "path";
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const BOOKINGS_FILE = path.join(DATA_DIR, "bookings.json");
+const DATA_DIR             = path.join(process.cwd(), "data");
+const BOOKINGS_FILE        = path.join(DATA_DIR, "bookings.json");
+const PAYMENT_BOOKINGS_FILE = path.join(DATA_DIR, "payment-bookings.json");
 
 if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR);
@@ -18,6 +21,10 @@ if (!fs.existsSync(DATA_DIR)) {
 
 if (!fs.existsSync(BOOKINGS_FILE)) {
   fs.writeFileSync(BOOKINGS_FILE, JSON.stringify([]));
+}
+
+if (!fs.existsSync(PAYMENT_BOOKINGS_FILE)) {
+  fs.writeFileSync(PAYMENT_BOOKINGS_FILE, JSON.stringify([]));
 }
 
 export interface IStorage {
@@ -29,6 +36,9 @@ export interface IStorage {
   getBookings(): Promise<Booking[]>;
   createBooking(booking: InsertBooking): Promise<Booking>;
   deleteBooking(id: string): Promise<boolean>;
+
+  getPaymentBookings(): Promise<PaymentBooking[]>;
+  createPaymentBooking(booking: InsertPaymentBooking): Promise<PaymentBooking>;
 }
 
 export class JSONStorage implements IStorage {
@@ -103,6 +113,43 @@ export class JSONStorage implements IStorage {
     bookings.splice(index, 1);
     fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2));
     return true;
+  }
+
+  async getPaymentBookings(): Promise<PaymentBooking[]> {
+    try {
+      const data = fs.readFileSync(PAYMENT_BOOKINGS_FILE, "utf-8");
+      if (!data || data.trim() === "") return [];
+      return JSON.parse(data) as PaymentBooking[];
+    } catch (e) {
+      console.error("Error reading payment-bookings.json:", e);
+      fs.writeFileSync(PAYMENT_BOOKINGS_FILE, JSON.stringify([]));
+      return [];
+    }
+  }
+
+  async createPaymentBooking(booking: InsertPaymentBooking): Promise<PaymentBooking> {
+    const existing = await this.getPaymentBookings();
+
+    // Prevent duplicate reference
+    const duplicate = existing.find((b) => b.reference === booking.reference);
+    if (duplicate) return duplicate;
+
+    const newEntry: PaymentBooking = {
+      ...booking,
+      id:     randomUUID(),
+      paidAt: new Date().toISOString(),
+    };
+
+    existing.push(newEntry);
+
+    try {
+      fs.writeFileSync(PAYMENT_BOOKINGS_FILE, JSON.stringify(existing, null, 2));
+    } catch (e) {
+      console.error("Error writing payment-bookings.json:", e);
+      throw new Error("Could not save payment booking");
+    }
+
+    return newEntry;
   }
 }
 

@@ -5,7 +5,6 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, XCircle, Loader2 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
 
 interface VerifyResult {
   status: string;
@@ -18,16 +17,25 @@ interface VerifyResult {
 async function saveBookingAfterPayment(data: VerifyResult): Promise<void> {
   // Retrieve pending booking details stored before redirecting to Paystack
   const raw = sessionStorage.getItem("pendingBooking");
-  if (!raw) return;
+  const pending = raw ? JSON.parse(raw) as { room?: string; guestName?: string } : null;
 
-  const booking = JSON.parse(raw) as {
-    roomId: string;
-    guestName: string;
-    checkIn: string;
-    checkOut: string;
-  };
+  const res = await fetch("/api/payment-bookings", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name:      pending?.guestName ?? data.email,
+      email:     data.email,
+      room:      pending?.room ?? "Unknown",
+      amount:    data.amount / 100,
+      reference: data.reference,
+    }),
+  });
 
-  await apiRequest("POST", "/api/bookings", booking);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error ?? "Failed to save booking");
+  }
+
   sessionStorage.removeItem("pendingBooking");
 }
 

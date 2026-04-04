@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertBookingSchema } from "@shared/schema";
+import { insertBookingSchema, insertPaymentBookingSchema } from "@shared/schema";
 import axios from "axios";
 
 // Set timezone to Lagos
@@ -49,6 +49,26 @@ export async function registerRoutes(
 
     const booking = await storage.createBooking(parsed.data);
     res.json(booking);
+  });
+
+  // Save payment booking after successful Paystack payment
+  app.post("/api/payment-bookings", async (req, res) => {
+    const parsed = insertPaymentBookingSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error.flatten() });
+    }
+
+    try {
+      const booking = await storage.createPaymentBooking(parsed.data);
+      return res.status(201).json(booking);
+    } catch (e: any) {
+      return res.status(500).json({ error: e.message ?? "Failed to save booking" });
+    }
+  });
+
+  app.get("/api/payment-bookings", async (_req, res) => {
+    const bookings = await storage.getPaymentBookings();
+    res.json(bookings);
   });
 
   // Paystack: Initialize transaction
