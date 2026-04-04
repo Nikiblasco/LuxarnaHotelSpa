@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertBookingSchema } from "@shared/schema";
+import axios from "axios";
 
 // Set timezone to Lagos
 process.env.TZ = "Africa/Lagos";

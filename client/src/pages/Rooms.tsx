@@ -16,10 +16,10 @@ import deluxeRoomImage from "@assets/1764434733686_1764435313833.jpg";
 import standardRoomImage from "@assets/generated_images/standard_hotel_room_interior.png";
 
 const TYPE_IMAGES: Record<string, string> = {
-  "King Suite":    KingSuiteImage,
-  "Queen Suite":   QueenSuiteImage,
+  "King Suite": KingSuiteImage,
+  "Queen Suite": QueenSuiteImage,
   "Deluxe Room":   deluxeRoomImage,
-  "Standard Room": standardRoomImage,
+  "Standard Room":   standardRoomImage,
 };
 
 const TYPE_DETAILS: Record<string, { description: string; amenities: string[]; featured?: boolean }> = {
@@ -30,15 +30,15 @@ const TYPE_DETAILS: Record<string, { description: string; amenities: string[]; f
   },
   "Queen Suite": {
     description: "A sophisticated Queen suite blending modern elegance with warm Nigerian hospitality. Spacious, serene, and designed for ultimate comfort.",
-    amenities: ["wifi", "ac", "tv", "bathroom", "breakfast"],
+    amenities: ["wifi", "ac", "tv", "bathroom", "breakfast", "parking"],
   },
   "Deluxe Room": {
     description: "A beautifully appointed deluxe room offering generous space, refined décor, and all the comforts you need for a relaxing and productive stay.",
-    amenities: ["wifi", "ac", "tv", "bathroom"],
+    amenities: ["wifi", "ac", "tv", "bathroom", "parking"],
   },
   "Standard Room": {
     description: "Smart, comfortable, and thoughtfully furnished — our standard room delivers excellent value with everything you need for a pleasant night's rest.",
-    amenities: ["wifi", "ac", "tv"],
+    amenities: ["wifi", "ac", "tv", "bathroom", "parking"],
   },
 };
 
