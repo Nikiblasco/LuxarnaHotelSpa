@@ -8,10 +8,65 @@ interface Message {
 }
 
 const QUICK_ACTIONS = [
-  { label: "Room Inquiries", prompt: "Tell me about your available rooms and pricing." },
+  { label: "Room Inquiries",       prompt: "Tell me about your available rooms and pricing." },
   { label: "Restaurant Inquiries", prompt: "What are your restaurant hours and what do you serve?" },
-  { label: "Spa Inquiries", prompt: "What spa services do you offer and what are the prices?" },
+  { label: "Spa Inquiries",        prompt: "What spa services do you offer and what are the prices?" },
 ];
+
+// Local knowledge base — answers quick-action questions without calling OpenAI
+const LOCAL_KB: Record<string, string> = {
+  "Tell me about your available rooms and pricing.":
+`We have 4 room types at Luxarna Hotel & Spa:
+
+🛏 King Suite (Room 206) — ₦50,000/night
+Panoramic views, private sitting lounge, premium finishes.
+Amenities: WiFi, AC, TV, Bathroom, Breakfast, Parking.
+
+🛏 Queen Suite (Room 204) — ₦40,000/night
+Modern elegance with warm Nigerian hospitality.
+Amenities: WiFi, AC, TV, Bathroom, Breakfast.
+
+🛏 Deluxe Room (Rooms 101,102,201,202,203,205) — ₦30,000/night
+6 rooms available. Generous space with refined décor.
+Amenities: WiFi, AC, TV, Bathroom.
+
+🛏 Standard Room (Room 103) — ₦23,000/night
+Smart, comfortable, excellent value.
+Amenities: WiFi, AC, TV.
+
+To book, visit our Rooms page or contact us at LuxarnaHotel@gmail.com or https://wa.me/2347049929851`,
+
+  "What are your restaurant hours and what do you serve?":
+`Our Restaurant & Karaoke Bar:
+
+🍽 Dining Hours:
+• Breakfast: 7:00 AM – 11:30 AM
+• Lunch: 12:00 PM – 4:00 PM
+• Dinner: 5:00 PM – 11:30 PM
+
+🎤 Karaoke Bar:
+• Hours: 5:00 PM – 2:00 AM
+• Premium cocktails & drinks available all night
+
+We serve delicious local dishes — taste Nigerian cuisine and channel your inner superstar! To book a table, reach us at LuxarnaHotel@gmail.com or https://wa.me/2347049929851`,
+
+  "What spa services do you offer and what are the prices?":
+`Our Luxarna Spa is open daily 9:00 AM – 9:00 PM.
+
+💆 Full Body Massage — ₦40,000 (45 mins)
+Signature massage combining traditional techniques with modern relaxation therapy.
+
+✨ Facial — ₦30,000 (30 mins)
+Premium facial for a radiant, glowing complexion.
+
+💅 Pedicure — ₦7,500 (45–60 mins)
+Relaxing foot soak, exfoliation, nail care & massage.
+
+💅 Manicure — ₦7,500 (25–30 mins)
+Professional nail shaping, cuticle care & hand massage.
+
+Advance booking is recommended. To reserve your spot, contact us at LuxarnaHotel@gmail.com or https://wa.me/2347049929851`,
+};
 
 const GREETING = "Welcome to Luxarna Hotel & Spa! How can we make your stay exceptional? 🌟";
 
@@ -50,9 +105,16 @@ export default function ChatBot() {
     const next = [...messages, userMsg];
     setMessages(next);
     setInput("");
-    setLoading(true);
     setShowQuick(false);
 
+    // Check local knowledge base first (always works, no API needed)
+    if (LOCAL_KB[text]) {
+      setMessages(prev => [...prev, { role: "assistant", content: LOCAL_KB[text] }]);
+      return;
+    }
+
+    // Free-form question — call OpenAI
+    setLoading(true);
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -60,9 +122,18 @@ export default function ChatBot() {
         body: JSON.stringify({ messages: next }),
       });
       const data = await res.json();
-      setMessages(prev => [...prev, { role: "assistant", content: data.reply ?? "Sorry, I couldn't get a response." }]);
+
+      if (!res.ok) {
+        const isQuota = data.error?.includes("429") || data.error?.includes("quota");
+        const fallback = isQuota
+          ? "Our AI assistant is temporarily unavailable. Please contact us directly:\n📧 LuxarnaHotel@gmail.com\n💬 https://wa.me/2347049929851\n📞 +234 704 992 9851"
+          : (data.error ?? "Sorry, something went wrong. Please try again.");
+        setMessages(prev => [...prev, { role: "assistant", content: fallback }]);
+      } else {
+        setMessages(prev => [...prev, { role: "assistant", content: data.reply ?? "Sorry, I couldn't get a response." }]);
+      }
     } catch {
-      setMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please try again." }]);
+      setMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please reach us at LuxarnaHotel@gmail.com or https://wa.me/2347049929851" }]);
     } finally {
       setLoading(false);
     }
