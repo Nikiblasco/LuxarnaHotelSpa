@@ -12,6 +12,7 @@ import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
 import PaymentSuccess from "@/pages/PaymentSuccess";
 import NotFound from "@/pages/not-found";
+import ChatBot from "@/components/ChatBot";
 
 function Router() {
   return (
@@ -35,6 +36,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <ChatBot />
       </TooltipProvider>
     </QueryClientProvider>
   );
