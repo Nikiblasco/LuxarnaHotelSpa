@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertBookingSchema, insertPaymentBookingSchema } from "@shared/schema";
 import axios from "axios";
-import OpenAI from "openai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
 import path from "path";
 
@@ -54,8 +54,8 @@ export async function registerRoutes(
     res.json(booking);
   });
 
-  // ── AI Chatbot ───────────────────────────────────────────────────────────
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  // ── AI Chatbot (Google Gemini) ────────────────────────────────────────────
+  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY ?? "");
 
   const CHAT_LOG_FILE = path.join(process.cwd(), "data", "chat-logs.json");
   if (!fs.existsSync(CHAT_LOG_FILE)) fs.writeFileSync(CHAT_LOG_FILE, "[]");
@@ -99,24 +99,28 @@ RULES:
       messages: Array<{ role: "user" | "assistant"; content: string }>;
     };
 
-    if (!messages || !Array.isArray(messages)) {
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "messages array is required" });
     }
 
     try {
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: SYSTEM_PROMPT },
-          ...messages,
-        ],
-        max_tokens: 400,
-        temperature: 0.7,
+      const model = genAI.getGenerativeModel({
+        model: "gemini-2.0-flash",
+        systemInstruction: SYSTEM_PROMPT,
       });
 
-      const reply = completion.choices[0]?.message?.content ?? "I'm sorry, I couldn't process that. Please try again.";
+      // Convert message history (all but last) to Gemini format
+      const history = messages.slice(0, -1).map(m => ({
+        role: m.role === "assistant" ? "model" : "user",
+        parts: [{ text: m.content }],
+      }));
 
-      // Log conversation to file
+      const chat = model.startChat({ history });
+      const lastMessage = messages[messages.length - 1].content;
+      const result = await chat.sendMessage(lastMessage);
+      const reply = result.response.text();
+
+      // Log conversation
       try {
         const logs = JSON.parse(fs.readFileSync(CHAT_LOG_FILE, "utf-8"));
         logs.push({

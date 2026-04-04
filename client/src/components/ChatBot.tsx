@@ -124,10 +124,10 @@ export default function ChatBot() {
       const data = await res.json();
 
       if (!res.ok) {
-        const isQuota = data.error?.includes("429") || data.error?.includes("quota");
+        const isQuota = data.error?.includes("429") || data.error?.toLowerCase().includes("quota");
         const fallback = isQuota
-          ? "Our AI assistant is temporarily unavailable. Please contact us directly:\n📧 LuxarnaHotel@gmail.com\n💬 https://wa.me/2347049929851\n📞 +234 704 992 9851"
-          : (data.error ?? "Sorry, something went wrong. Please try again.");
+          ? "Our AI assistant needs a billing upgrade to respond to custom questions. For now, please use the quick-action buttons above, or reach us directly:\n\n📧 LuxarnaHotel@gmail.com\n💬 https://wa.me/2347049929851\n📞 +234 704 992 9851"
+          : "I'm having trouble right now. Please contact us:\n📧 LuxarnaHotel@gmail.com\n💬 https://wa.me/2347049929851";
         setMessages(prev => [...prev, { role: "assistant", content: fallback }]);
       } else {
         setMessages(prev => [...prev, { role: "assistant", content: data.reply ?? "Sorry, I couldn't get a response." }]);
