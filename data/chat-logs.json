@@ -24,5 +24,78 @@
         "content": "It is currently **11:37 AM** in Nigeria. Nigeria operates on West Africa Time (WAT), which is UTC+1."
       }
     ]
+  },
+  {
+    "timestamp": "2026-04-06T17:38:23.286Z",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! Welcome to Luxarna Hotel & Spa. I'm Luxie, your AI concierge. How may I assist you today? I can help with rooms, our spa, restaurant, or any hotel enquiries."
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-04-06T17:38:37.681Z",
+    "messages": [
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! Welcome to Luxarna Hotel & Spa. I'm Luxie, your AI concierge. How may I assist you today? I can help with rooms, our spa, restaurant, or any hotel enquiries."
+      },
+      {
+        "role": "user",
+        "content": "i would like to see available rooms"
+      },
+      {
+        "role": "assistant",
+        "content": "I can certainly tell you about our beautiful rooms and their prices!\n\nHere are our room types and what they offer:\n\n*   **King Suite (Room 206):** ₦50,000/night. Features panoramic views, a private sitting lounge, and premium finishes. Includes WiFi, AC, TV, Bathroom, Breakfast, and Parking.\n*   **Queen Suite (Room 204):** ₦40,000/night. Offers modern elegance with warm Nigerian hospitality. Includes WiFi, AC, TV, Bathroom, and Breakfast.\n*   **Deluxe Rooms (6 available):** ₦30,000/night. Refined décor with WiFi, AC, TV, and Bathroom.\n*   **Standard Room (Room 103):** ₦23,000/night. Comfortable and excellent value, includes WiFi, AC, and TV.\n\nRoom availability can only be confirmed at the time of booking. To check specific dates and book, please visit our Rooms page or contact our front desk directly via WhatsApp at https://wa.me/2347049929851 or email LuxarnaHotel@gmail.com."
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-04-06T17:41:08.793Z",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! Welcome to Luxarna Hotel & Spa. I'm Luxie, your AI concierge. How may I assist you today? I can help with rooms, our spa, restaurant, or any hotel enquiries."
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-04-06T17:41:31.291Z",
+    "messages": [
+      {
+        "role": "user",
+        "content": "I would like to know available rooms"
+      },
+      {
+        "role": "assistant",
+        "content": "Certainly! We have several room types at Luxarna Hotel & Spa:\n\n*   **King Suite (Room 206):** ₦50,000/night. Features panoramic views, a private sitting lounge, and premium finishes. Includes WiFi, AC, TV, bathroom, breakfast, and parking.\n*   **Queen Suite (Room 204):** ₦40,000/night. Offers modern elegance. Includes WiFi, AC, TV, bathroom, and breakfast.\n*   **Deluxe Rooms (6 available):** ₦30,000/night. These rooms feature refined décor and include WiFi, AC, TV, and a bathroom.\n*   **Standard Room (Room 103):** ₦23,000/night. Comfortable and excellent value, including WiFi, AC, and TV.\n\nRoom availability can only be confirmed at the time of booking. You can book on our Rooms page or contact our front desk directly via WhatsApp at https://wa.me/2347049929851 or by calling +234 704 992 9851."
+      }
+    ]
+  },
+  {
+    "timestamp": "2026-04-06T17:44:07.678Z",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Is the Queen Suite available from April 10 to April 15?"
+      },
+      {
+        "role": "assistant",
+        "content": "Unfortunately, the Queen Suite (Room 204) is booked from April 10th to April 15th, 2026.\n\nWe have other beautiful options available, such as our King Suite (Room 206) or our Deluxe Rooms. Would you like to know more about them?"
+      }
+    ]
   }
 ]

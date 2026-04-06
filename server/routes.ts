@@ -111,9 +111,50 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
     }
 
     try {
+      // ── Fetch live booking data to inject into the system prompt ──────────
+      const [allBookings, allRooms] = await Promise.all([
+        storage.getBookings(),
+        storage.getRooms(),
+      ]);
+
+      const now = new Date();
+      const activeBookings = allBookings.filter(b => new Date(b.checkOut) > now);
+
+      let bookingContext = "\n\nLIVE ROOM AVAILABILITY (real-time — use this to answer availability questions):\n";
+
+      if (activeBookings.length === 0) {
+        bookingContext += "All rooms are currently available for booking.\n";
+      } else {
+        const byRoom: Record<string, typeof activeBookings> = {};
+        for (const b of activeBookings) {
+          if (!byRoom[b.roomId]) byRoom[b.roomId] = [];
+          byRoom[b.roomId].push(b);
+        }
+
+        for (const room of allRooms) {
+          const roomBookings = byRoom[room.id] ?? [];
+          if (roomBookings.length === 0) {
+            bookingContext += `- ${room.name} (Room ${room.id}): AVAILABLE\n`;
+          } else {
+            const ranges = roomBookings.map(b => {
+              const ci = new Date(b.checkIn).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+              const co = new Date(b.checkOut).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+              return `booked ${ci} → ${co}`;
+            }).join("; ");
+            bookingContext += `- ${room.name} (Room ${room.id}): ${ranges}\n`;
+          }
+        }
+      }
+
+      bookingContext += "\nIMPORTANT RULES FOR AVAILABILITY:\n";
+      bookingContext += "- If a room is shown as booked for a date range the guest wants, tell them clearly and suggest alternative rooms or dates.\n";
+      bookingContext += "- If a room is AVAILABLE, encourage the guest to book via the Rooms page on the website.\n";
+      bookingContext += "- Never reveal guest names — only booking dates.\n";
+      // ─────────────────────────────────────────────────────────────────────
+
       const model = genAI.getGenerativeModel({
         model: "gemini-2.5-flash",
-        systemInstruction: SYSTEM_PROMPT,
+        systemInstruction: SYSTEM_PROMPT + bookingContext,
       });
 
       // Convert message history (all but last) to Gemini format
