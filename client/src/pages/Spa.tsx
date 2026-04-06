@@ -76,7 +76,7 @@ export default function Spa() {
               Book Your Spa Experience
             </h2>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto" data-testid="text-spa-cta-desc">
-              Our spa is open daily from 9:00 AM to 9:00 PM. Advance booking is recommended to ensure availability.
+              Enjoy 24hrs spa services at your beck and call.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <a href="/contact" className="inline-block">

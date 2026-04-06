@@ -9,7 +9,7 @@ import heroImage from "@assets/luxarna-hotel-and-s-ng-port-harcourt-bc-15089961-
 
 const sections = [
   {
-    title: "Luxurious Rooms",
+    title: "Rooms",
     description: "Elegantly designed rooms with modern amenities, plush bedding, and breathtaking ambiance for your perfect stay.",
     icon: Bed,
     image: roomImage1,
@@ -18,7 +18,7 @@ const sections = [
   },
   {
     title: "Relaxing Spa",
-    description: "Rejuvenate your body and mind with our world-class spa treatments, from massages to facials.",
+    description: "Rejuvenate your body and mind with our personalised spa treatments, from massages to facials, to pedicures and manicures.",
     icon: Sparkles,
     image: spaImage,
     link: "/spa",
@@ -34,7 +34,7 @@ const sections = [
   },
   {
     title: "Our Story",
-    description: "Discover the Luxarna experience - where comfort, privacy, and luxury come together.",
+    description: "Discover the Luxarna experience - where comfort, privacy, and tranquility come together.",
     icon: Heart,
     image: heroImage,
     link: "/about",

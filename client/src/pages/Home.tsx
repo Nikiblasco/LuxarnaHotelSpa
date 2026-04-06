@@ -71,12 +71,7 @@ export default function Home() {
 
       <section className="py-16 md:py-24 bg-secondary text-secondary-foreground">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold mb-6" data-testid="text-cta-title">
-            Ready for Your <span className="text-primary">Escape</span>?
-          </h2>
-          <p className="text-secondary-foreground/80 text-lg mb-8 max-w-2xl mx-auto" data-testid="text-cta-desc">
-            Book your stay at Luxarna Hotel & Spa and experience the perfect blend of luxury, comfort, and tranquility.
-          </p>
+          
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/contact">
               <Button size="lg" className="min-w-[180px]" data-testid="button-cta-book">

@@ -17,8 +17,8 @@ const coreValues = [
   },
   {
     icon: Sparkles,
-    title: "Luxury",
-    description: "Experience the finest in hospitality with premium amenities, elegant spaces, and exceptional attention to detail.",
+    title: "Hospitality",
+    description: "Where guests can enjoy personalised hospitality.",
   },
 ];
 
@@ -37,30 +37,45 @@ export default function About() {
       <section className="pt-24 md:pt-32 pb-16 md:pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 md:mb-16">
-            <p className="text-primary font-medium tracking-widest uppercase text-sm mb-3" data-testid="text-about-subtitle">
-              Our Story
-            </p>
-            <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4" data-testid="text-about-title">
-              About Luxarna
+            <h1 
+              className="font-serif text-5xl md:text-7xl font-bold text-slate-900 tracking-tight mb-6" 
+              data-testid="text-about-subtitle"
+            >
+              Our <span className="text-primary italic font-medium">Story</span>
             </h1>
-            <p className="text-muted-foreground text-lg max-w-2xl mx-auto" data-testid="text-about-desc">
-              Where luxury meets tranquility in the heart of Port Harcourt
-            </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
             <div className="space-y-6">
-              <p className="text-foreground text-lg leading-relaxed" data-testid="text-story-1">
-                Welcome to <span className="text-primary font-semibold">Luxarna Hotel & Spa</span>, a premier destination for discerning travelers seeking an exceptional blend of luxury, comfort, and tranquility.
-              </p>
-              <p className="text-muted-foreground leading-relaxed" data-testid="text-story-2">
-                Located in the prestigious Mandela Estate of Port Harcourt, Luxarna was founded with a singular vision: to create a sanctuary where guests can escape the ordinary and immerse themselves in extraordinary hospitality.
-              </p>
-              <p className="text-muted-foreground leading-relaxed" data-testid="text-story-3">
-                Our hotel combines elegant architecture with modern amenities, featuring beautifully appointed rooms, a world-class spa, an exquisite restaurant, and vibrant entertainment options. Every corner of Luxarna reflects our commitment to excellence and our passion for creating memorable experiences.
-              </p>
-              <p className="text-muted-foreground leading-relaxed" data-testid="text-story-4">
-                Whether you're here for business or leisure, a romantic getaway or a family celebration, we invite you to discover the Luxarna experience — where your peaceful escape truly awaits.
+              <div className="max-w-4xl mx-auto px-6 py-12 md:py-20 flex flex-col gap-8">
+
+                {/* Paragraph 1: The Intro */}
+                <p className="text-foreground text-lg md:text-xl leading-relaxed font-light tracking-wide" data-testid="text-story-1">
+                  Welcome to <span className="text-primary font-bold">Luxarna Hotel & Spa</span>, 
+                  a premier destination for discerning travelers seeking an exceptional blend 
+                  of security, comfort, and tranquility.
+                </p>
+
+                {/* Paragraph 2: The Location/Origin */}
+                <p className="text-muted-foreground text-lg md:text-xl leading-relaxed font-light" data-testid="text-story-2">
+                  Located in the prestigious <span className="text-foreground font-medium">Mandela Estate of Port Harcourt</span>, 
+                  Luxarna was founded with a singular vision: to create a sanctuary where guests 
+                  can escape the ordinary and immerse themselves in extraordinary hospitality.
+                </p>
+
+                {/* Paragraph 3: The Features */}
+                <p className="text-muted-foreground text-lg md:text-xl leading-relaxed font-light" data-testid="text-story-3">
+                  Our hotel combines elegant architecture with modern amenities, featuring 
+                  beautifully appointed rooms, a spa, an exquisite restaurant, and vibrant 
+                  entertainment options. Every corner of Luxarna reflects our commitment to 
+                  excellence and our passion for creating memorable experiences. We are 
+                  committed to delivering personalised exceptional services and creating 
+                  <span className="italic"> memorable experiences.</span>
+                </p>
+
+              </div>
+              <p className="font-semibold italic text-xl tracking-wide text-slate-800">
+                "Just tell us what you want ! "
               </p>
             </div>
 
@@ -102,27 +117,8 @@ export default function About() {
               ))}
             </div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="p-6 text-center hover-elevate" data-testid="card-commitment-1">
-              <Users className="w-10 h-10 text-primary mx-auto mb-4" />
-              <h3 className="font-semibold text-foreground mb-2">Our Team</h3>
-              <p className="text-muted-foreground text-sm">Dedicated professionals committed to exceeding your expectations</p>
-            </Card>
-            <Card className="p-6 text-center hover-elevate" data-testid="card-commitment-2">
-              <Award className="w-10 h-10 text-primary mx-auto mb-4" />
-              <h3 className="font-semibold text-foreground mb-2">Excellence</h3>
-              <p className="text-muted-foreground text-sm">Award-winning service and hospitality standards</p>
-            </Card>
-            <Card className="p-6 text-center hover-elevate" data-testid="card-commitment-3">
-              <Leaf className="w-10 h-10 text-primary mx-auto mb-4" />
-              <h3 className="font-semibold text-foreground mb-2">Sustainability</h3>
-              <p className="text-muted-foreground text-sm">Committed to eco-friendly practices and responsible hospitality</p>
-            </Card>
-          </div>
         </div>
       </section>
-
       <Footer />
     </div>
   );

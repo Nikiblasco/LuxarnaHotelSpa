@@ -43,7 +43,7 @@ export default function HeroSection() {
             style={{ animationDelay: "0.6s" }}
             data-testid="text-hero-description"
           >
-            Experience luxury accommodation, world-class spa treatments, and unforgettable dining in the heart of Port Harcourt.
+            Experience unparalleled comfort and a truly personalised stay in a sought-after area of Port-harcourt.
           </p>
           
           <div 

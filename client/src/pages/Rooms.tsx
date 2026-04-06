@@ -33,7 +33,7 @@ const TYPE_DETAILS: Record<string, { description: string; amenities: string[]; f
     amenities: ["wifi", "ac", "tv", "bathroom", "breakfast", "parking"],
   },
   "Deluxe Room": {
-    description: "A beautifully appointed deluxe room offering generous space, refined décor, and all the comforts you need for a relaxing and productive stay.",
+    description: "A beautifully appointed deluxe room offering generous space, refined décor, and all the comfort you need for a relaxing and productive stay.",
     amenities: ["wifi", "ac", "tv", "bathroom", "parking"],
   },
   "Standard Room": {

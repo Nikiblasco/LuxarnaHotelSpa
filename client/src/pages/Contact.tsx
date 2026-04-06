@@ -95,15 +95,19 @@ export default function Contact() {
                 </div>
               </Card>
 
-              <Card className="overflow-hidden h-64 md:h-80">
-                <div className="w-full h-full bg-muted flex items-center justify-center">
-                  <div className="text-center">
-                    <MapPin className="w-12 h-12 text-primary mx-auto mb-4" />
-                    <p className="text-muted-foreground font-medium" data-testid="text-map-placeholder">Map Placeholder</p>
-                    <p className="text-muted-foreground text-sm">Plot 13, Trunk C, Mandela Estate</p>
-                  </div>
-                </div>
-              </Card>
+              <div className="w-full h-[400px] md:h-[500px] rounded-xl overflow-hidden shadow-lg border border-slate-200 bg-slate-50 relative">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3975.385366472492!2d6.985994474980287!3d4.892911195083161!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x1069d1ec4f59b535%3A0x9afd60f900d0cb3d!2sLuxarna%20Hotel%20and%20Spa!5e0!3m2!1sen!2sng!4v1712420000000!5m2!1sen!2sng"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen=""
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Luxarna Hotel Location"
+                  className="absolute inset-0"
+                ></iframe>
+              </div>
             </div>
 
             <div>
