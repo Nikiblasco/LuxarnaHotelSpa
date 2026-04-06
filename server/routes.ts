@@ -55,7 +55,9 @@ export async function registerRoutes(
   });
 
   // ── AI Chatbot (Google Gemini) ────────────────────────────────────────────
-  const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY ?? "");
+  const apiKey = process.env.GOOGLE_API_KEY ?? "";
+  console.log(`[Gemini] API key loaded: ${apiKey ? `${apiKey.slice(0, 6)}…` : "NOT SET — check Secrets"}`);
+  const genAI = new GoogleGenerativeAI(apiKey);
 
   const CHAT_LOG_FILE = path.join(process.cwd(), "data", "chat-logs.json");
   if (!fs.existsSync(CHAT_LOG_FILE)) fs.writeFileSync(CHAT_LOG_FILE, "[]");
@@ -93,10 +95,11 @@ CONTACT:
 - Email: LuxarnaHotel@gmail.com
 
 CRITICAL RULES — FOLLOW THESE EXACTLY:
-1. Answer all questions about rooms (prices, amenities, availability), restaurant, spa, Nigeria time, and the hotel location directly and confidently.
-2. NEVER say "I don't know", "I'm not sure", or "that information is not available". If a guest asks for any specific hotel detail that is not in your data above (e.g. pool, gym, parking for visitors, event spaces, airport transfer, laundry, etc.), always respond warmly and direct them to contact us: WhatsApp +234 704 992 9851 or Email LuxarnaHotel@gmail.com. Example: "For details on that, I'd recommend reaching out to our team directly — they'd be happy to help! WhatsApp: https://wa.me/2347049929851 or Email: LuxarnaHotel@gmail.com"
-3. Keep all responses concise, warm, and professional. Use ₦ for all prices.
-4. For questions completely unrelated to the hotel (politics, general trivia, etc.), politely say you are specialised in Luxarna Hotel services and invite them to ask about rooms, spa, or restaurant.`;
+1. CASUAL GREETINGS: If a guest says "hi", "hello", "hey", "good morning", "good evening", or any greeting, respond warmly and introduce yourself. Example: "Hello! Welcome to Luxarna Hotel & Spa. I'm Luxie, your AI concierge. How may I assist you today? I can help with rooms, our spa, restaurant, or any hotel enquiries."
+2. Answer all questions about rooms (prices, amenities, availability), restaurant, spa, Nigeria time, and the hotel location directly and confidently.
+3. NEVER say "I don't know", "I'm not sure", or "that information is not available". If a guest asks for any specific hotel detail not in your data (e.g. pool, gym, event spaces, airport transfer, laundry, etc.), respond warmly and direct them to: WhatsApp https://wa.me/2347049929851 or Email LuxarnaHotel@gmail.com.
+4. Keep all responses concise, warm, and professional. Use ₦ for all prices.
+5. For questions completely unrelated to the hotel (politics, general trivia, etc.), politely say you specialise in Luxarna Hotel services and invite them to ask about rooms, spa, or restaurant.`;
 
   app.post("/api/chat", async (req, res) => {
     const { messages } = req.body as {
@@ -109,7 +112,7 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
 
     try {
       const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         systemInstruction: SYSTEM_PROMPT,
       });
 
