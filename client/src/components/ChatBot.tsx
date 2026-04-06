@@ -9,95 +9,111 @@ interface Message {
 
 const QUICK_ACTIONS = [
   { label: "Room Inquiries",       prompt: "Tell me about your available rooms and pricing." },
-  { label: "Restaurant Inquiries", prompt: "What are your restaurant hours and what do you serve?" },
   { label: "Spa Inquiries",        prompt: "What spa services do you offer and what are the prices?" },
+  { label: "Restaurant Inquiries", prompt: "What are your restaurant hours and what do you serve?" },
 ];
 
-// Local knowledge base — answers quick-action questions without calling OpenAI
+// Silent local-knowledge fallback — used only when the API is unavailable
 const LOCAL_KB: Record<string, string> = {
   "Tell me about your available rooms and pricing.":
 `We have 4 room types at Luxarna Hotel & Spa:
 
-🛏 King Suite (Room 206) — ₦50,000/night
+King Suite (Room 206) — ₦50,000/night
 Panoramic views, private sitting lounge, premium finishes.
 Amenities: WiFi, AC, TV, Bathroom, Breakfast, Parking.
 
-🛏 Queen Suite (Room 204) — ₦40,000/night
+Queen Suite (Room 204) — ₦40,000/night
 Modern elegance with warm Nigerian hospitality.
 Amenities: WiFi, AC, TV, Bathroom, Breakfast.
 
-🛏 Deluxe Room (Rooms 101,102,201,202,203,205) — ₦30,000/night
-6 rooms available. Generous space with refined décor.
+Deluxe Room (Rooms 101, 102, 201, 202, 203, 205) — ₦30,000/night
+6 rooms with generous space and refined decor.
 Amenities: WiFi, AC, TV, Bathroom.
 
-🛏 Standard Room (Room 103) — ₦23,000/night
-Smart, comfortable, excellent value.
+Standard Room (Room 103) — ₦23,000/night
+Comfortable and excellent value.
 Amenities: WiFi, AC, TV.
 
-To book, visit our Rooms page or contact us at LuxarnaHotel@gmail.com or https://wa.me/2347049929851`,
-
-  "What are your restaurant hours and what do you serve?":
-`Our Restaurant & Karaoke Bar:
-
-🍽 Dining Hours:
-• Breakfast: 7:00 AM – 11:30 AM
-• Lunch: 12:00 PM – 4:00 PM
-• Dinner: 5:00 PM – 11:30 PM
-
-🎤 Karaoke Bar:
-• Hours: 5:00 PM – 2:00 AM
-• Premium cocktails & drinks available all night
-
-We serve delicious local dishes — taste Nigerian cuisine and channel your inner superstar! To book a table, reach us at LuxarnaHotel@gmail.com or https://wa.me/2347049929851`,
+To book, visit our Rooms page or contact us:
+Email: LuxarnaHotel@gmail.com
+WhatsApp: https://wa.me/2347049929851`,
 
   "What spa services do you offer and what are the prices?":
 `Our Luxarna Spa is open daily 9:00 AM – 9:00 PM.
 
-💆 Full Body Massage — ₦40,000 (45 mins)
-Signature massage combining traditional techniques with modern relaxation therapy.
+Full Body Massage — ₦40,000 (45 mins)
+Signature massage blending traditional & modern techniques.
 
-✨ Facial — ₦30,000 (30 mins)
-Premium facial for a radiant, glowing complexion.
+Facial — ₦30,000 (30 mins)
+Premium facial for a radiant complexion.
 
-💅 Pedicure — ₦7,500 (45–60 mins)
-Relaxing foot soak, exfoliation, nail care & massage.
+Pedicure — ₦7,500 (45–60 mins)
+Relaxing foot soak, exfoliation, and nail care.
 
-💅 Manicure — ₦7,500 (25–30 mins)
-Professional nail shaping, cuticle care & hand massage.
+Manicure — ₦7,500 (25–30 mins)
+Professional nail and hand care.
 
-Advance booking is recommended. To reserve your spot, contact us at LuxarnaHotel@gmail.com or https://wa.me/2347049929851`,
+Advance booking recommended:
+Email: LuxarnaHotel@gmail.com
+WhatsApp: https://wa.me/2347049929851`,
+
+  "What are your restaurant hours and what do you serve?":
+`Our Restaurant & Karaoke Bar:
+
+Dining Hours:
+- Breakfast: 7:00 AM – 11:30 AM
+- Lunch: 12:00 PM – 4:00 PM
+- Dinner: 5:00 PM – 11:30 PM
+
+Karaoke Bar: 5:00 PM – 2:00 AM
+Premium cocktails and drinks available all night.
+
+We serve Nigerian local dishes and continental options.
+To reserve a table: LuxarnaHotel@gmail.com
+WhatsApp: https://wa.me/2347049929851`,
 };
 
-const GREETING = "Welcome to Luxarna Hotel & Spa! How can we make your stay exceptional? 🌟";
+const GREETING = "Welcome to Luxarna Hotel & Spa, how may I help you?";
 
 function renderContent(text: string) {
   const parts = text.split(/(https?:\/\/[^\s]+)/g);
   return parts.map((part, i) =>
     /^https?:\/\//.test(part) ? (
-      <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="underline text-yellow-300 break-all">
+      <a
+        key={i}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="underline text-yellow-300 break-all"
+      >
         {part.includes("wa.me") ? "Chat on WhatsApp" : part}
       </a>
     ) : (
       <span key={i}>{part}</span>
-    )
+    ),
   );
 }
 
 export default function ChatBot() {
-  const [open, setOpen]         = useState(false);
+  const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput]       = useState("");
-  const [loading, setLoading]   = useState(false);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showQuick, setShowQuick] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
-  const inputRef  = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
   useEffect(() => {
-    if (open) inputRef.current?.focus();
+    if (open) {
+      setMessages([]);
+      setShowQuick(true);
+      setInput("");
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
   }, [open]);
 
   const sendMessage = async (text: string) => {
@@ -106,15 +122,8 @@ export default function ChatBot() {
     setMessages(next);
     setInput("");
     setShowQuick(false);
-
-    // Check local knowledge base first (always works, no API needed)
-    if (LOCAL_KB[text]) {
-      setMessages(prev => [...prev, { role: "assistant", content: LOCAL_KB[text] }]);
-      return;
-    }
-
-    // Free-form question — call OpenAI
     setLoading(true);
+
     try {
       const res = await fetch("/api/chat", {
         method: "POST",
@@ -124,16 +133,30 @@ export default function ChatBot() {
       const data = await res.json();
 
       if (!res.ok) {
-        const isQuota = data.error?.includes("429") || data.error?.toLowerCase().includes("quota");
-        const fallback = isQuota
-          ? "Our AI assistant needs a billing upgrade to respond to custom questions. For now, please use the quick-action buttons above, or reach us directly:\n\n📧 LuxarnaHotel@gmail.com\n💬 https://wa.me/2347049929851\n📞 +234 704 992 9851"
-          : "I'm having trouble right now. Please contact us:\n📧 LuxarnaHotel@gmail.com\n💬 https://wa.me/2347049929851";
-        setMessages(prev => [...prev, { role: "assistant", content: fallback }]);
+        // API unavailable — silently use local KB for the 3 standard questions
+        const localAnswer = LOCAL_KB[text];
+        setMessages(prev => [
+          ...prev,
+          {
+            role: "assistant",
+            content: localAnswer ?? "Connecting to concierge...",
+          },
+        ]);
       } else {
-        setMessages(prev => [...prev, { role: "assistant", content: data.reply ?? "Sorry, I couldn't get a response." }]);
+        setMessages(prev => [
+          ...prev,
+          { role: "assistant", content: data.reply ?? "How may I assist you?" },
+        ]);
       }
     } catch {
-      setMessages(prev => [...prev, { role: "assistant", content: "Connection error. Please reach us at LuxarnaHotel@gmail.com or https://wa.me/2347049929851" }]);
+      const localAnswer = LOCAL_KB[text];
+      setMessages(prev => [
+        ...prev,
+        {
+          role: "assistant",
+          content: localAnswer ?? "Connecting to concierge...",
+        },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -156,16 +179,21 @@ export default function ChatBot() {
         aria-label="Open chat"
         data-testid="button-chat-toggle"
       >
-        {open
-          ? <X className="w-6 h-6 text-white" />
-          : <MessageCircle className="w-6 h-6 text-white" />}
+        {open ? (
+          <X className="w-6 h-6 text-white" />
+        ) : (
+          <MessageCircle className="w-6 h-6 text-white" />
+        )}
       </button>
 
       {/* Chat window */}
       {open && (
         <div
           className="fixed bottom-24 right-4 z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl"
-          style={{ width: "min(380px, calc(100vw - 32px))", height: "min(560px, calc(100vh - 120px))" }}
+          style={{
+            width: "min(380px, calc(100vw - 32px))",
+            height: "min(560px, calc(100vh - 120px))",
+          }}
           data-testid="chat-window"
         >
           {/* Header */}
@@ -210,7 +238,7 @@ export default function ChatBot() {
               </div>
             </div>
 
-            {/* Quick action buttons */}
+            {/* Quick action buttons — always visible until a conversation starts */}
             {showQuick && (
               <div className="flex flex-col gap-2 pl-9">
                 {QUICK_ACTIONS.map(action => (
@@ -229,7 +257,7 @@ export default function ChatBot() {
               </div>
             )}
 
-            {/* Conversation */}
+            {/* Conversation messages */}
             {messages.map((msg, i) => (
               <div key={i} className={`flex gap-2 ${msg.role === "user" ? "justify-end" : ""}`}>
                 {msg.role === "assistant" && (
@@ -290,7 +318,7 @@ export default function ChatBot() {
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
-              placeholder="Ask Luxie anything…"
+              placeholder="Type a question or choose a topic above…"
               className="flex-1 bg-transparent text-white placeholder-white/40 text-sm outline-none py-1"
               disabled={loading}
               data-testid="input-chat"
@@ -302,7 +330,11 @@ export default function ChatBot() {
               style={{ background: "linear-gradient(135deg, #D4AF37, #B8860B)", border: "none" }}
               data-testid="button-chat-send"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : <Send className="w-4 h-4 text-white" />}
+              {loading ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : (
+                <Send className="w-4 h-4 text-white" />
+              )}
             </Button>
           </form>
         </div>
