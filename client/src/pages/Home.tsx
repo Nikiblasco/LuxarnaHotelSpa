@@ -2,6 +2,7 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
 import SectionPreview from "@/components/SectionPreview";
+import GallerySection from "@/components/GallerySection";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Star, Shield, Heart, Award } from "lucide-react";
@@ -35,6 +36,7 @@ export default function Home() {
       <Navigation />
       <HeroSection />
       <SectionPreview />
+      <GallerySection />
 
       <section className="py-16 md:py-24 bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
