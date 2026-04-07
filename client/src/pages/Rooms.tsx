@@ -11,7 +11,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Room, Booking } from "@shared/schema";
 
 import KingSuiteImage from "@assets/room pics 2_1764432338683.webp";
-import QueenSuiteImage from "@assets/Room pics_1764432345524.webp";
+import QueenSuiteImage from "@assets/luxarna.jpeg";
 import deluxeRoomImage from "@assets/1764434733686_1764435313833.jpg";
 import standardRoomImage from "@assets/generated_images/standard_hotel_room_interior.png";
 
