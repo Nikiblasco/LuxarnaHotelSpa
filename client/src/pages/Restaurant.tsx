@@ -139,7 +139,7 @@ export default function Restaurant() {
                 <div>
                   <h3 className="font-semibold text-foreground">Bar Hours</h3>
                   <p className="text-primary font-medium text-sm">
-                    5:00 PM – 2:00 AM
+                    6:00 AM – 1:00 AM
                   </p>
                   <p className="text-muted-foreground text-sm mt-1">
                     Premium cocktails and drinks available

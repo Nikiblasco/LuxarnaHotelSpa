@@ -97,5 +97,18 @@
         "content": "Unfortunately, the Queen Suite (Room 204) is booked from April 10th to April 15th, 2026.\n\nWe have other beautiful options available, such as our King Suite (Room 206) or our Deluxe Rooms. Would you like to know more about them?"
       }
     ]
+  },
+  {
+    "timestamp": "2026-04-06T17:47:12.336Z",
+    "messages": [
+      {
+        "role": "user",
+        "content": "I would like to book the king suite room"
+      },
+      {
+        "role": "assistant",
+        "content": "Warm greetings! Thank you for your interest in our King Suite.\n\nThe King Suite (Room 206) is currently booked from April 6th, 2026 to April 7th, 2026.\n\nCould you please let me know your desired check-in and check-out dates? This way, I can confirm its availability for your specific stay.\n\nAlternatively, we have other beautiful rooms available, such as our Queen Suite or Deluxe Rooms."
+      }
+    ]
   }
 ]
