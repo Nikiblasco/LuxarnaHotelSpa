@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { queryClient, apiRequest } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { Room, Booking } from "@shared/schema";
 
 import KingSuiteImage from "@assets/room pics 2_1764432338683.webp";
@@ -18,8 +18,8 @@ import standardRoomImage from "@assets/generated_images/standard_hotel_room_inte
 const TYPE_IMAGES: Record<string, string> = {
   "King Suite": KingSuiteImage,
   "Queen Suite": QueenSuiteImage,
-  "Deluxe Room":   deluxeRoomImage,
-  "Standard Room":   standardRoomImage,
+  "Deluxe Room": deluxeRoomImage,
+  "Standard Room": standardRoomImage,
 };
 
 const TYPE_DETAILS: Record<string, { description: string; amenities: string[]; featured?: boolean }> = {
@@ -46,27 +46,30 @@ const TYPE_ORDER = ["King Suite", "Queen Suite", "Deluxe Room", "Standard Room"]
 
 export default function Rooms() {
   const { toast } = useToast();
-  const [checkIn, setCheckIn]   = useState("");
-  const [checkOut, setCheckOut] = useState("");
+  const [checkIn, setCheckIn]     = useState("");
+  const [checkOut, setCheckOut]   = useState("");
   const [guestName, setGuestName] = useState("");
+  const [email, setEmail]         = useState("");
+  const [loadingType, setLoadingType] = useState<string | null>(null);
 
   const { data: rooms }    = useQuery<Room[]>({ queryKey: ["/api/rooms"] });
   const { data: bookings } = useQuery<Booking[]>({ queryKey: ["/api/bookings"] });
 
-  const bookingMutation = useMutation({
-    mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/bookings", data);
-      return res.json();
+  // ── Paystack payment flow ────────────────────────────────────────────────
+  const payMutation = useMutation({
+    mutationFn: async (data: { email: string; amount: number; name: string; room: string }) => {
+      const res = await apiRequest("POST", "/initialize-payment", data);
+      return res.json() as Promise<{ authorization_url: string; reference: string }>;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
-      toast({ title: "Booking successful!", description: "We look forward to your stay." });
-      setGuestName("");
+    onSuccess: ({ authorization_url }) => {
+      // Redirect to Paystack hosted checkout page
+      window.location.href = authorization_url;
     },
     onError: (err: any) => {
+      setLoadingType(null);
       toast({
-        title: "Booking failed",
-        description: err.message || "Sold Out for these dates",
+        title: "Payment could not be initiated",
+        description: err.message ?? "Please try again.",
         variant: "destructive",
       });
     },
@@ -110,35 +113,95 @@ export default function Rooms() {
     ? TYPE_ORDER.map(type => ({ type, rooms: rooms.filter(r => r.type === type) })).filter(g => g.rooms.length > 0)
     : [];
 
+  // Validate form fields before allowing Book Now
+  const formReady = guestName.trim().length > 0 && email.trim().length > 0 && checkIn && checkOut;
+
+  const handleBookNow = (type: string, price: number, availableRooms: Room[]) => {
+    const roomToBook = availableRooms[0];
+    if (!roomToBook) return;
+
+    if (!formReady) {
+      toast({
+        title: "Please fill in all fields",
+        description: "Name, email, check-in and check-out dates are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setLoadingType(type);
+    payMutation.mutate({ email, amount: price, name: guestName, room: type });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       <section className="pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4">
+
+          {/* ── Booking form ── */}
           <div className="bg-card p-6 rounded-lg shadow-sm mb-12 border">
-            <h2 className="font-serif text-2xl mb-6">Check Availability</h2>
-            <div className="grid md:grid-cols-3 gap-4 items-end">
+            <h2 className="font-serif text-2xl mb-6">Check Availability & Book</h2>
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
               <div className="space-y-2">
-                <Label>Guest Name</Label>
-                <Input value={guestName} onChange={e => setGuestName(e.target.value)} placeholder="Full Name" />
+                <Label htmlFor="guestName">Full Name</Label>
+                <Input
+                  id="guestName"
+                  data-testid="input-guest-name"
+                  value={guestName}
+                  onChange={e => setGuestName(e.target.value)}
+                  placeholder="e.g. Ada Okafor"
+                />
               </div>
               <div className="space-y-2">
-                <Label>Check-in</Label>
-                <Input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)} />
+                <Label htmlFor="email">Email Address</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  data-testid="input-email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  placeholder="you@email.com"
+                />
               </div>
               <div className="space-y-2">
-                <Label>Check-out</Label>
-                <Input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)} />
+                <Label htmlFor="checkIn">Check-in</Label>
+                <Input
+                  id="checkIn"
+                  type="date"
+                  data-testid="input-checkin"
+                  value={checkIn}
+                  onChange={e => setCheckIn(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="checkOut">Check-out</Label>
+                <Input
+                  id="checkOut"
+                  type="date"
+                  data-testid="input-checkout"
+                  value={checkOut}
+                  onChange={e => setCheckOut(e.target.value)}
+                />
               </div>
             </div>
+
+            {/* Helper hint */}
+            {!formReady && (
+              <p className="text-xs text-muted-foreground mt-3">
+                Fill in all four fields above, then click <strong>Book Now</strong> on any available room — you'll be taken to our secure Paystack checkout.
+              </p>
+            )}
           </div>
 
+          {/* ── Room cards ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {roomsByType.map(({ type, rooms: roomsOfType }) => {
-              const avail      = getTypeAvailability(roomsOfType);
-              const isMultiple = roomsOfType.length > 1;
+              const avail       = getTypeAvailability(roomsOfType);
+              const isMultiple  = roomsOfType.length > 1;
               const isAvailable = avail.status === "available";
-              const price      = roomsOfType[0]?.price ?? 0;
+              const price       = roomsOfType[0]?.price ?? 0;
+              const isPaying    = loadingType === type && payMutation.isPending;
 
               const badgeClass =
                 avail.status === "no_dates"
@@ -192,14 +255,15 @@ export default function Rooms() {
 
                     <Button
                       className="w-full"
-                      disabled={!isAvailable || !guestName || bookingMutation.isPending}
-                      onClick={() => {
-                        const roomToBook = avail.availableRooms[0];
-                        if (!roomToBook) return;
-                        bookingMutation.mutate({ roomId: roomToBook.id, guestName, checkIn, checkOut });
-                      }}
+                      data-testid={`button-book-${type.toLowerCase().replace(/\s+/g, '-')}`}
+                      disabled={!isAvailable || !formReady || isPaying}
+                      onClick={() => handleBookNow(type, price, avail.availableRooms)}
                     >
-                      {avail.status === "occupied" ? "Sold Out" : "Book Now"}
+                      {isPaying
+                        ? "Redirecting to payment..."
+                        : avail.status === "occupied"
+                        ? "Sold Out"
+                        : "Book Now"}
                     </Button>
                   </div>
                 </div>
