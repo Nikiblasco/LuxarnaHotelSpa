@@ -340,27 +340,24 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
   // Receives Paystack webhook events and updates booking_status accordingly.
   // Paystack sends: POST with JSON body + x-paystack-signature header (HMAC-SHA512)
   app.post("/webhook", async (req, res) => {
-    const secretKey = process.env.PAYSTACK_SECRET_KEY;
-    if (!secretKey) return res.sendStatus(500);
+    const secret = process.env.PAYSTACK_SECRET_KEY;
+    if (!secret) return res.sendStatus(500);
 
-    // 1 ── Verify Paystack signature using the raw request body
-    const signature = req.headers["x-paystack-signature"] as string | undefined;
-    const rawBody   = req.rawBody as Buffer | undefined;
-
-    if (!signature || !rawBody) return res.sendStatus(400);
-
-    const expectedSig = crypto
-      .createHmac("sha512", secretKey)
-      .update(rawBody)
+    // Verify the HMAC-SHA512 signature — only Paystack knows the secret key,
+    // so only Paystack can produce a matching hash. This prevents anyone else
+    // from injecting fake events and modifying booking records.
+    const hash = crypto
+      .createHmac("sha512", secret)
+      .update(JSON.stringify(req.body))
       .digest("hex");
 
-    if (signature !== expectedSig) {
-      console.warn("[Webhook] Invalid Paystack signature — request rejected");
+    if (hash !== req.headers["x-paystack-signature"]) {
+      console.warn("[Webhook] Signature mismatch — request rejected");
       return res.sendStatus(401);
     }
 
-    // 2 ── Handle the event
-    const event = req.body as { event: string; data: { reference: string; status: string } };
+    // Signature verified — safe to process the event
+    const event = req.body as { event: string; data: { reference: string } };
 
     if (event.event === "charge.success") {
       const { reference } = event.data;
@@ -369,10 +366,10 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
     } else if (event.event === "charge.failed") {
       const { reference } = event.data;
       await storage.updatePaymentBookingStatus(reference, "failed");
-      console.log(`[Webhook] charge.failed — reference: ${event.data.reference}`);
+      console.log(`[Webhook] charge.failed — reference: ${reference}`);
     }
 
-    // Always respond 200 quickly so Paystack does not retry
+    // Always acknowledge quickly so Paystack does not retry the event
     return res.sendStatus(200);
   });
   // ─────────────────────────────────────────────────────────────────────────
