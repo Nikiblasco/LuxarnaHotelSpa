@@ -5,12 +5,11 @@ import img1 from "@assets/luxarna 2.jpeg";
 import img2 from "@assets/luxarna 3 .jpeg";
 import img3 from "@assets/luxarna 4.jpeg";
 import img4 from "@assets/luxarna 5.jpeg";
-import img5 from "@assets/luxarna 6.jpeg";
 import img6 from "@assets/luxarna 7.jpeg";
 import img7 from "@assets/luxarna 8.jpeg";
 import img8 from "@assets/luxarna 9.jpeg";
 
-const images = [img0, img1, img2, img3, img4, img5, img6, img7, img8];
+const images = [img0, img1, img2, img3, img4, img6, img7, img8];
 
 export default function GallerySection() {
   const [currentIndex, setCurrentIndex] = useState(0);

@@ -39,6 +39,7 @@ export interface IStorage {
 
   getPaymentBookings(): Promise<PaymentBooking[]>;
   createPaymentBooking(booking: InsertPaymentBooking): Promise<PaymentBooking>;
+  updatePaymentBookingStatus(reference: string, status: "pending" | "confirmed" | "failed"): Promise<boolean>;
 }
 
 export class JSONStorage implements IStorage {
@@ -127,6 +128,15 @@ export class JSONStorage implements IStorage {
     }
   }
 
+  async updatePaymentBookingStatus(reference: string, status: "pending" | "confirmed" | "failed"): Promise<boolean> {
+    const existing = await this.getPaymentBookings();
+    const index = existing.findIndex(b => b.reference === reference);
+    if (index === -1) return false;
+    existing[index].status = status;
+    fs.writeFileSync(PAYMENT_BOOKINGS_FILE, JSON.stringify(existing, null, 2));
+    return true;
+  }
+
   async createPaymentBooking(booking: InsertPaymentBooking): Promise<PaymentBooking> {
     const existing = await this.getPaymentBookings();
 
@@ -138,6 +148,7 @@ export class JSONStorage implements IStorage {
       ...booking,
       id:     randomUUID(),
       paidAt: new Date().toISOString(),
+      status: "pending",
     };
 
     existing.push(newEntry);

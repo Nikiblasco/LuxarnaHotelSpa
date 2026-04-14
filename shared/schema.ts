@@ -47,4 +47,8 @@ export type Room                 = typeof rooms.$inferSelect;
 export type Booking              = typeof bookings.$inferSelect;
 export type InsertBooking        = z.infer<typeof insertBookingSchema>;
 export type InsertPaymentBooking = z.infer<typeof insertPaymentBookingSchema>;
-export type PaymentBooking       = InsertPaymentBooking & { id: string; paidAt: string };
+export type PaymentBooking       = InsertPaymentBooking & {
+  id: string;
+  paidAt: string;
+  status: "pending" | "confirmed" | "failed";
+};

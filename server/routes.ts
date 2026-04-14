@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertBookingSchema, insertPaymentBookingSchema } from "@shared/schema";
 import axios from "axios";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 
@@ -291,6 +292,90 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
       return res.status(502).json({ error: message });
     }
   });
+
+  // ── POST /initialize-payment ─────────────────────────────────────────────
+  // Initializes a Paystack transaction and saves a pending booking record.
+  // Body: { email, amount (in ₦), name, room }
+  app.post("/initialize-payment", async (req, res) => {
+    const { email, amount, name, room } = req.body as {
+      email: string;
+      amount: number;
+      name: string;
+      room: string;
+    };
+
+    if (!email || !amount || !name || !room) {
+      return res.status(400).json({ error: "email, amount, name and room are required" });
+    }
+
+    const secretKey = process.env.PAYSTACK_SECRET_KEY;
+    if (!secretKey) {
+      return res.status(500).json({ error: "Paystack secret key not configured" });
+    }
+
+    try {
+      // 1 ── Initialize with Paystack (amount in kobo)
+      const paystackRes = await axios.post<{
+        status: boolean;
+        data: { authorization_url: string; access_code: string; reference: string };
+      }>(
+        "https://api.paystack.co/transaction/initialize",
+        { email, amount: Math.round(amount * 100) },
+        { headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/json" } }
+      );
+
+      const { authorization_url, access_code, reference } = paystackRes.data.data;
+
+      // 2 ── Save a PENDING booking record immediately
+      await storage.createPaymentBooking({ email, amount, name, room, reference });
+
+      return res.json({ authorization_url, access_code, reference });
+    } catch (err: any) {
+      const message = err.response?.data?.message ?? err.message ?? "Paystack error";
+      return res.status(502).json({ error: message });
+    }
+  });
+
+  // ── POST /webhook ─────────────────────────────────────────────────────────
+  // Receives Paystack webhook events and updates booking_status accordingly.
+  // Paystack sends: POST with JSON body + x-paystack-signature header (HMAC-SHA512)
+  app.post("/webhook", async (req, res) => {
+    const secretKey = process.env.PAYSTACK_SECRET_KEY;
+    if (!secretKey) return res.sendStatus(500);
+
+    // 1 ── Verify Paystack signature using the raw request body
+    const signature = req.headers["x-paystack-signature"] as string | undefined;
+    const rawBody   = req.rawBody as Buffer | undefined;
+
+    if (!signature || !rawBody) return res.sendStatus(400);
+
+    const expectedSig = crypto
+      .createHmac("sha512", secretKey)
+      .update(rawBody)
+      .digest("hex");
+
+    if (signature !== expectedSig) {
+      console.warn("[Webhook] Invalid Paystack signature — request rejected");
+      return res.sendStatus(401);
+    }
+
+    // 2 ── Handle the event
+    const event = req.body as { event: string; data: { reference: string; status: string } };
+
+    if (event.event === "charge.success") {
+      const { reference } = event.data;
+      const updated = await storage.updatePaymentBookingStatus(reference, "confirmed");
+      console.log(`[Webhook] charge.success — reference: ${reference}, updated: ${updated}`);
+    } else if (event.event === "charge.failed") {
+      const { reference } = event.data;
+      await storage.updatePaymentBookingStatus(reference, "failed");
+      console.log(`[Webhook] charge.failed — reference: ${event.data.reference}`);
+    }
+
+    // Always respond 200 quickly so Paystack does not retry
+    return res.sendStatus(200);
+  });
+  // ─────────────────────────────────────────────────────────────────────────
 
   return httpServer;
 }

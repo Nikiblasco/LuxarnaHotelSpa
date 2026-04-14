@@ -7,5 +7,15 @@
     "reference": "test_ref_001",
     "id": "6bf475f9-3bee-424e-aba0-5f07f46f9b02",
     "paidAt": "2026-04-04T15:19:32.825Z"
+  },
+  {
+    "email": "test@example.com",
+    "amount": 30000,
+    "name": "John Doe",
+    "room": "Deluxe Room 101",
+    "reference": "w9v8b4gm0k",
+    "id": "88cf64b5-7718-4657-bfd7-393629f0ca83",
+    "paidAt": "2026-04-14T22:07:23.062Z",
+    "status": "pending"
   }
 ]
