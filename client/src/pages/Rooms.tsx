@@ -116,7 +116,13 @@ export default function Rooms() {
   // Validate form fields before allowing Book Now
   const formReady = guestName.trim().length > 0 && email.trim().length > 0 && checkIn && checkOut;
 
-  const handleBookNow = (type: string, price: number, availableRooms: Room[]) => {
+  const getNights = () => {
+    if (!checkIn || !checkOut) return 0;
+    const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
+    return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
+  };
+
+  const handleBookNow = (type: string, pricePerNight: number, availableRooms: Room[]) => {
     const roomToBook = availableRooms[0];
     if (!roomToBook) return;
 
@@ -129,8 +135,19 @@ export default function Rooms() {
       return;
     }
 
+    const nights = getNights();
+    if (nights < 1) {
+      toast({
+        title: "Invalid dates",
+        description: "Check-out must be at least one day after check-in.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const totalAmount = pricePerNight * nights;
     setLoadingType(type);
-    payMutation.mutate({ email, amount: price, name: guestName, room: type });
+    payMutation.mutate({ email, amount: totalAmount, name: guestName, room: type });
   };
 
   return (
@@ -202,6 +219,9 @@ export default function Rooms() {
               const isAvailable = avail.status === "available";
               const price       = roomsOfType[0]?.price ?? 0;
               const isPaying    = loadingType === type && payMutation.isPending;
+              const nights      = getNights();
+              const totalAmount = price * (nights > 0 ? nights : 1);
+              const totalLabel  = new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", minimumFractionDigits: 0 }).format(totalAmount);
 
               const badgeClass =
                 avail.status === "no_dates"
@@ -263,6 +283,8 @@ export default function Rooms() {
                         ? "Redirecting to payment..."
                         : avail.status === "occupied"
                         ? "Sold Out"
+                        : nights > 0 && formReady
+                        ? `Book Now — ${totalLabel} (${nights} night${nights > 1 ? "s" : ""})`
                         : "Book Now"}
                     </Button>
                   </div>
