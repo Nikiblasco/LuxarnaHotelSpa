@@ -16,60 +16,71 @@ export default function GallerySection() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setCurrentIndex((prevIndex) =>
-        prevIndex === images.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 3000);
+      setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+    }, 5000);
     return () => clearInterval(timer);
   }, []);
 
   return (
-    <section className="py-20 bg-[#0a0a0a]">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="py-24 bg-[#050505]">
+      <div className="max-w-7xl mx-auto px-6">
 
-        {/* Section Heading */}
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-serif text-[#D4AF37] tracking-widest uppercase mb-4">
-            Our Gallery
+        {/* Header */}
+        <div className="text-center mb-16">
+          <span className="text-[#D4AF37] text-sm uppercase tracking-[0.3em] font-light mb-2 block">Experience Excellence</span>
+          <h2 className="text-5xl md:text-6xl font-serif text-white tracking-tight mb-6">
+            Our <span className="italic text-[#D4AF37]">Gallery</span>
           </h2>
-          <div className="h-1 w-24 bg-[#D4AF37] mx-auto opacity-50" />
+          <div className="flex justify-center items-center gap-4">
+            <div className="h-[1px] w-12 bg-gradient-to-r from-transparent to-[#D4AF37]" />
+            <div className="w-2 h-2 rotate-45 border border-[#D4AF37]" />
+            <div className="h-[1px] w-12 bg-gradient-to-l from-transparent to-[#D4AF37]" />
+          </div>
         </div>
 
-        {/* Slideshow */}
-        <div className="relative w-full h-[400px] md:h-[600px] overflow-hidden rounded-lg border border-[#D4AF37]/20 shadow-2xl">
+        {/* Slideshow Container */}
+        <div className="relative w-full h-[500px] md:h-[700px] rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(212,175,55,0.1)] border border-white/10">
+
           {images.map((image, index) => (
             <div
               key={index}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
+              className={`absolute inset-0 transition-opacity duration-[2000ms] ease-in-out ${
                 index === currentIndex ? "opacity-100" : "opacity-0"
               }`}
             >
               <img
                 src={image}
-                alt={`Luxarna Gallery ${index + 1}`}
-                className="w-full h-full object-cover"
-                data-testid={`gallery-image-${index}`}
+                alt={`Gallery ${index}`}
+                className={`w-full h-full object-cover transition-transform duration-[10000ms] linear ${
+                  index === currentIndex ? "scale-110" : "scale-100"
+                }`}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60" />
             </div>
           ))}
 
-          {/* Navigation Dots */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-3">
+          {/* Navigation */}
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex items-center space-x-4 px-6 py-3 rounded-full bg-black/20 backdrop-blur-md border border-white/10 z-10">
             {images.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                data-testid={`gallery-dot-${index}`}
-                className={`h-1.5 rounded-full transition-all duration-500 ${
-                  index === currentIndex
-                    ? "bg-[#D4AF37] w-8"
-                    : "bg-white/30 w-4"
-                }`}
-              />
+                className="group p-2"
+              >
+                <div className={`h-[2px] transition-all duration-500 rounded-full ${
+                  index === currentIndex ? "w-8 bg-[#D4AF37]" : "w-4 bg-white/40 group-hover:bg-white/70"
+                }`} />
+              </button>
             ))}
           </div>
+
+          {/* Corner Accents */}
+          <div className="absolute top-6 left-6 w-8 h-8 border-t border-l border-[#D4AF37]/50 pointer-events-none" />
+          <div className="absolute top-6 right-6 w-8 h-8 border-t border-r border-[#D4AF37]/50 pointer-events-none" />
+          <div className="absolute bottom-6 left-6 w-8 h-8 border-b border-l border-[#D4AF37]/50 pointer-events-none" />
+          <div className="absolute bottom-6 right-6 w-8 h-8 border-b border-r border-[#D4AF37]/50 pointer-events-none" />
         </div>
+
       </div>
     </section>
   );
