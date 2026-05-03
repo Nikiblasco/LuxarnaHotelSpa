@@ -36,13 +36,24 @@ export default function Restaurant() {
             >
               Taste our local dishes and channel your inner superstar.
             </p>
-            <Button
-              size="lg"
+            <button
               onClick={() => window.open(WHATSAPP_RESTAURANT, "_blank")}
               data-testid="button-book-table"
+              className="
+                bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#B8860B]
+                text-black font-serif font-bold text-xl uppercase tracking-widest
+                py-6 px-10
+                rounded-none
+                shadow-[5px_5px_15px_rgba(0,0,0,0.4)]
+                border-2 border-[#996515]
+                transition-all duration-300 ease-in-out
+                hover:scale-105 hover:brightness-110
+                active:scale-95
+                text-center
+              "
             >
-              Book a Table Now
-            </Button>
+              Book a Table <br /> Now
+            </button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
