@@ -198,7 +198,7 @@ export default function Rooms() {
               // Button label
               const btnLabel = total
                 ? `Book Now — ${formatPrice(total)} (${nights} night${nights > 1 ? "s" : ""})`
-                : "Book Now via WhatsApp";
+                : "Book Now";
 
               return (
                 <div key={type} className="relative flex flex-col">

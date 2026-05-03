@@ -2,8 +2,11 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import ServiceCard from "@/components/ServiceCard";
 import { Card } from "@/components/ui/card";
-import { Sparkles, Hand, Footprints, Heart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sparkles, Hand, Footprints, Heart, Phone } from "lucide-react";
 import spaImage from "@assets/generated_images/luxury_spa_treatment_room.png";
+
+const WHATSAPP_SPA = "https://wa.me/2347049929851?text=Hello%20Luxarna%20Hotel!%20I%27d%20like%20to%20book%20a%20spa%20treatment.%20Please%20help%20me.";
 
 const spaServices = [
   {
@@ -40,7 +43,7 @@ export default function Spa() {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      
+
       <section className="pt-24 md:pt-32 pb-16 md:pb-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 md:mb-16">
@@ -79,15 +82,18 @@ export default function Spa() {
               Enjoy 24hrs spa services at your beck and call.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a href="/contact" className="inline-block">
-                <button className="bg-primary text-primary-foreground px-8 py-3 rounded-md font-semibold hover-elevate" data-testid="button-book-spa">
-                  Book Now
-                </button>
-              </a>
-              <a href="tel:+2348000000000" className="inline-block">
-                <button className="border border-border bg-background px-8 py-3 rounded-md font-semibold hover-elevate" data-testid="button-call-spa">
+              <Button
+                size="lg"
+                onClick={() => window.open(WHATSAPP_SPA, "_blank")}
+                data-testid="button-book-spa"
+              >
+                Book Now
+              </Button>
+              <a href="tel:+2347049929851">
+                <Button variant="outline" size="lg" className="gap-2" data-testid="button-call-spa">
+                  <Phone className="w-4 h-4" />
                   Call to Inquire
-                </button>
+                </Button>
               </a>
             </div>
           </div>

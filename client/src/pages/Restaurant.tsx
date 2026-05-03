@@ -1,13 +1,16 @@
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Clock, UtensilsCrossed, Music, Wine } from "lucide-react";
 import restaurantImage from "@assets/LUXARNA_RESTAURANT_1774999476903.png";
 
+const WHATSAPP_RESTAURANT = "https://wa.me/2347049929851?text=Hello%20Luxarna%20Hotel!%20I%27d%20like%20to%20book%20a%20table%20at%20your%20restaurant.%20Please%20help%20me.";
+
 const mealTimes = [
   { name: "Breakfast", time: "7:00 AM – 11:30 AM" },
-  { name: "Lunch", time: "12:00 PM – 4:00 PM" },
-  { name: "Dinner", time: "5:00 PM – 11:30 PM" },
+  { name: "Lunch",     time: "12:00 PM – 4:00 PM" },
+  { name: "Dinner",    time: "5:00 PM – 11:30 PM" },
 ];
 
 export default function Restaurant() {
@@ -18,26 +21,8 @@ export default function Restaurant() {
       <section className="pt-24 md:pt-32 pb-16 md:pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 md:mb-16">
-            <p
-              className="text-primary font-medium tracking-widest uppercase text-sm mb-3"
-              data-testid="text-restaurant-subtitle"
-            >
-              <button
-                className="
-                 bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#B8860B] 
-                 text-black font-serif font-bold text-xl uppercase tracking-widest
-                 py-6 px-10 
-                 rounded-none 
-                 shadow-[5px_5px_15px_rgba(0,0,0,0.4)]
-                 border-2 border-[#996515]
-                 transition-all duration-300 ease-in-out
-                 hover:scale-105 hover:brightness-110
-                 active:scale-95
-                 text-center
-                "
-              >
-                Book a Table <br /> Now
-              </button>
+            <p className="text-primary font-medium tracking-widest uppercase text-sm mb-3" data-testid="text-restaurant-subtitle">
+              Dining & Entertainment
             </p>
             <h1
               className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4"
@@ -46,11 +31,18 @@ export default function Restaurant() {
               Restaurant & Karaoke Bar
             </h1>
             <p
-              className="text-muted-foreground text-lg max-w-2xl mx-auto"
+              className="text-muted-foreground text-lg max-w-2xl mx-auto mb-8"
               data-testid="text-restaurant-desc"
             >
-              Tasty our local dishes and chanel your inner superstar.
+              Taste our local dishes and channel your inner superstar.
             </p>
+            <Button
+              size="lg"
+              onClick={() => window.open(WHATSAPP_RESTAURANT, "_blank")}
+              data-testid="button-book-table"
+            >
+              Book a Table Now
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-16">
@@ -90,12 +82,8 @@ export default function Restaurant() {
                       <Clock className="w-5 h-5 text-primary" />
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
-                      <h3 className="font-semibold text-foreground">
-                        {meal.name}
-                      </h3>
-                      <span className="text-primary font-medium text-sm">
-                        {meal.time}
-                      </span>
+                      <h3 className="font-semibold text-foreground">{meal.name}</h3>
+                      <span className="text-primary font-medium text-sm">{meal.time}</span>
                     </div>
                   </Card>
                 ))}
@@ -116,20 +104,14 @@ export default function Restaurant() {
                   >
                     Karaoke Bar
                   </h2>
-                  <p className="text-muted-foreground text-sm">
-                    Entertainment & nightlife
-                  </p>
+                  <p className="text-muted-foreground text-sm">Entertainment & nightlife</p>
                 </div>
               </div>
 
-              <p
-                className="text-muted-foreground leading-relaxed"
-                data-testid="text-karaoke-desc"
-              >
-                Unwind and showcase your vocal talents at our vibrant karaoke
-                bar. With an extensive song library, premium drinks, and a
-                lively atmosphere, it's the perfect spot for memorable nights
-                with friends and family.
+              <p className="text-muted-foreground leading-relaxed" data-testid="text-karaoke-desc">
+                Unwind and showcase your vocal talents at our vibrant karaoke bar. With an extensive
+                song library, premium drinks, and a lively atmosphere, it's the perfect spot for
+                memorable nights with friends and family.
               </p>
 
               <Card className="p-4 flex items-center gap-4">
@@ -138,12 +120,8 @@ export default function Restaurant() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">Bar Hours</h3>
-                  <p className="text-primary font-medium text-sm">
-                    6:00 AM – 1:00 AM
-                  </p>
-                  <p className="text-muted-foreground text-sm mt-1">
-                    Premium cocktails and drinks available
-                  </p>
+                  <p className="text-primary font-medium text-sm">6:00 AM – 1:00 AM</p>
+                  <p className="text-muted-foreground text-sm mt-1">Premium cocktails and drinks available</p>
                 </div>
               </Card>
             </div>
@@ -152,9 +130,7 @@ export default function Restaurant() {
               <div className="aspect-[16/10] overflow-hidden bg-secondary flex items-center justify-center">
                 <div className="text-center p-8">
                   <Music className="w-16 h-16 text-primary mx-auto mb-4" />
-                  <p className="text-secondary-foreground font-medium">
-                    Karaoke Bar
-                  </p>
+                  <p className="text-secondary-foreground font-medium">Karaoke Bar</p>
                 </div>
               </div>
             </Card>
