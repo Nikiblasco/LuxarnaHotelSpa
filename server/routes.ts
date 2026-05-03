@@ -1,10 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertBookingSchema, insertPaymentBookingSchema } from "@shared/schema";
-import axios from "axios";
+import { insertBookingSchema } from "@shared/schema";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import crypto from "crypto";
 import fs from "fs";
 import path from "path";
 
@@ -40,8 +38,8 @@ export async function registerRoutes(
 
     const { roomId, checkIn, checkOut } = parsed.data;
     const existing = await storage.getBookings();
-    
-    const conflict = existing.find(b => 
+
+    const conflict = existing.find(b =>
       b.roomId === roomId &&
       new Date(checkIn) < new Date(b.checkOut) &&
       new Date(checkOut) > new Date(b.checkIn)
@@ -75,7 +73,7 @@ ROOMS:
 - Queen Suite (Room 204): ₦40,000/night. Modern elegance with warm Nigerian hospitality. Amenities: WiFi, AC, TV, Bathroom, Breakfast.
 - Deluxe Rooms (Rooms 101, 102, 201, 202, 203, 205): ₦30,000/night each — 6 rooms available with refined décor. Amenities: WiFi, AC, TV, Bathroom.
 - Standard Room (Room 103): ₦23,000/night. Comfortable and excellent value. Amenities: WiFi, AC, TV.
-- Room availability can only be confirmed at booking. Guests should book on the Rooms page or contact the front desk.
+- Room availability can only be confirmed at booking. Guests should click "Book Now" on any room to start a WhatsApp booking with the hotel team.
 
 RESTAURANT & KARAOKE BAR:
 - Breakfast: 7:00 AM – 11:30 AM
@@ -149,7 +147,7 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
 
       bookingContext += "\nIMPORTANT RULES FOR AVAILABILITY:\n";
       bookingContext += "- If a room is shown as booked for a date range the guest wants, tell them clearly and suggest alternative rooms or dates.\n";
-      bookingContext += "- If a room is AVAILABLE, encourage the guest to book via the Rooms page on the website.\n";
+      bookingContext += "- If a room is AVAILABLE, encourage the guest to click 'Book Now' on the Rooms page to start a WhatsApp booking.\n";
       bookingContext += "- Never reveal guest names — only booking dates.\n";
       // ─────────────────────────────────────────────────────────────────────
 
@@ -158,7 +156,6 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
         systemInstruction: SYSTEM_PROMPT + bookingContext,
       });
 
-      // Convert message history (all but last) to Gemini format
       const history = messages.slice(0, -1).map(m => ({
         role: m.role === "assistant" ? "model" : "user",
         parts: [{ text: m.content }],
@@ -193,184 +190,6 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
     } catch {
       res.json([]);
     }
-  });
-  // ─────────────────────────────────────────────────────────────────────────
-
-  // Save payment booking after successful Paystack payment
-  app.post("/api/payment-bookings", async (req, res) => {
-    const parsed = insertPaymentBookingSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error.flatten() });
-    }
-
-    try {
-      const booking = await storage.createPaymentBooking(parsed.data);
-      return res.status(201).json(booking);
-    } catch (e: any) {
-      return res.status(500).json({ error: e.message ?? "Failed to save booking" });
-    }
-  });
-
-  app.get("/api/payment-bookings", async (_req, res) => {
-    const bookings = await storage.getPaymentBookings();
-    res.json(bookings);
-  });
-
-  // Paystack: Initialize transaction
-  app.post("/paystack/initialize", async (req, res) => {
-    const { email, amount } = req.body as { email: string; amount: number };
-
-    if (!email || !amount) {
-      return res.status(400).json({ error: "email and amount are required" });
-    }
-
-    const secretKey = process.env.PAYSTACK_SECRET_KEY;
-    if (!secretKey) {
-      return res.status(500).json({ error: "Paystack secret key not configured" });
-    }
-
-    try {
-      const response = await axios.post<{
-        status: boolean;
-        message: string;
-        data: { authorization_url: string; access_code: string; reference: string };
-      }>(
-        "https://api.paystack.co/transaction/initialize",
-        { email, amount: Math.round(amount * 100) },
-        {
-          headers: {
-            Authorization: `Bearer ${secretKey}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      return res.json({
-        authorization_url: response.data.data.authorization_url,
-        access_code: response.data.data.access_code,
-        reference: response.data.data.reference,
-      });
-    } catch (err: any) {
-      const message = err.response?.data?.message ?? err.message ?? "Paystack error";
-      return res.status(502).json({ error: message });
-    }
-  });
-
-  // Paystack: Verify transaction
-  app.get("/paystack/verify/:reference", async (req, res) => {
-    const { reference } = req.params;
-
-    const secretKey = process.env.PAYSTACK_SECRET_KEY;
-    if (!secretKey) {
-      return res.status(500).json({ error: "Paystack secret key not configured" });
-    }
-
-    try {
-      const response = await axios.get<{
-        status: boolean;
-        message: string;
-        data: {
-          status: string;
-          reference: string;
-          amount: number;
-          currency: string;
-          customer: { email: string };
-        };
-      }>(
-        `https://api.paystack.co/transaction/verify/${encodeURIComponent(reference)}`,
-        {
-          headers: {
-            Authorization: `Bearer ${secretKey}`,
-          },
-        }
-      );
-
-      const { status, reference: ref, amount, currency, customer } = response.data.data;
-      return res.json({ status, reference: ref, amount, currency, email: customer.email });
-    } catch (err: any) {
-      const message = err.response?.data?.message ?? err.message ?? "Paystack error";
-      return res.status(502).json({ error: message });
-    }
-  });
-
-  // ── POST /initialize-payment ─────────────────────────────────────────────
-  // Initializes a Paystack transaction and saves a pending booking record.
-  // Body: { email, amount (in ₦), name, room }
-  app.post("/initialize-payment", async (req, res) => {
-    const { email, amount, name, room } = req.body as {
-      email: string;
-      amount: number;
-      name: string;
-      room: string;
-    };
-
-    if (!email || !amount || !name || !room) {
-      return res.status(400).json({ error: "email, amount, name and room are required" });
-    }
-
-    const secretKey = process.env.PAYSTACK_SECRET_KEY;
-    if (!secretKey) {
-      return res.status(500).json({ error: "Paystack secret key not configured" });
-    }
-
-    try {
-      // 1 ── Initialize with Paystack (amount in kobo)
-      const paystackRes = await axios.post<{
-        status: boolean;
-        data: { authorization_url: string; access_code: string; reference: string };
-      }>(
-        "https://api.paystack.co/transaction/initialize",
-        { email, amount: Math.round(amount * 100) },
-        { headers: { Authorization: `Bearer ${secretKey}`, "Content-Type": "application/json" } }
-      );
-
-      const { authorization_url, access_code, reference } = paystackRes.data.data;
-
-      // 2 ── Save a PENDING booking record immediately
-      await storage.createPaymentBooking({ email, amount, name, room, reference });
-
-      return res.json({ authorization_url, access_code, reference });
-    } catch (err: any) {
-      const message = err.response?.data?.message ?? err.message ?? "Paystack error";
-      return res.status(502).json({ error: message });
-    }
-  });
-
-  // ── POST /webhook ─────────────────────────────────────────────────────────
-  // Receives Paystack webhook events and updates booking_status accordingly.
-  // Paystack sends: POST with JSON body + x-paystack-signature header (HMAC-SHA512)
-  app.post("/webhook", async (req, res) => {
-    const secret = process.env.PAYSTACK_SECRET_KEY;
-    if (!secret) return res.sendStatus(500);
-
-    // Verify the HMAC-SHA512 signature — only Paystack knows the secret key,
-    // so only Paystack can produce a matching hash. This prevents anyone else
-    // from injecting fake events and modifying booking records.
-    const hash = crypto
-      .createHmac("sha512", secret)
-      .update(JSON.stringify(req.body))
-      .digest("hex");
-
-    if (hash !== req.headers["x-paystack-signature"]) {
-      console.warn("[Webhook] Signature mismatch — request rejected");
-      return res.sendStatus(401);
-    }
-
-    // Signature verified — safe to process the event
-    const event = req.body as { event: string; data: { reference: string } };
-
-    if (event.event === "charge.success") {
-      const { reference } = event.data;
-      const updated = await storage.updatePaymentBookingStatus(reference, "confirmed");
-      console.log(`[Webhook] charge.success — reference: ${reference}, updated: ${updated}`);
-    } else if (event.event === "charge.failed") {
-      const { reference } = event.data;
-      await storage.updatePaymentBookingStatus(reference, "failed");
-      console.log(`[Webhook] charge.failed — reference: ${reference}`);
-    }
-
-    // Always acknowledge quickly so Paystack does not retry the event
-    return res.sendStatus(200);
   });
   // ─────────────────────────────────────────────────────────────────────────
 

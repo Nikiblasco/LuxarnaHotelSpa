@@ -4,18 +4,22 @@ import { Button } from "@/components/ui/button";
 import { Menu, X, Phone } from "lucide-react";
 import logoImage from "@assets/1764434830238_1764435323080.jpg";
 
+const WHATSAPP_URL = "https://wa.me/2347049929851?text=Hello%20Luxarna%20Hotel!%20I%27d%20like%20to%20make%20a%20booking.%20Please%20help%20me.";
+
 const navItems = [
-  { name: "Home", path: "/" },
-  { name: "Rooms", path: "/rooms" },
-  { name: "Spa", path: "/spa" },
+  { name: "Home",       path: "/" },
+  { name: "Rooms",      path: "/rooms" },
+  { name: "Spa",        path: "/spa" },
   { name: "Restaurant", path: "/restaurant" },
-  { name: "About", path: "/about" },
-  { name: "Contact", path: "/contact" },
+  { name: "About",      path: "/about" },
+  { name: "Contact",    path: "/contact" },
 ];
 
 export default function Navigation() {
   const [isOpen, setIsOpen] = useState(false);
   const [location] = useLocation();
+
+  const openWhatsApp = () => window.open(WHATSAPP_URL, "_blank");
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
@@ -41,15 +45,15 @@ export default function Navigation() {
           </div>
 
           <div className="hidden lg:flex items-center gap-3">
-            <Button variant="outline" size="sm" className="gap-2" data-testid="button-call">
-              <Phone className="w-4 h-4" />
-              <span className="hidden xl:inline">Call Us</span>
-            </Button>
-            <Link href="/contact">
-              <Button size="sm" data-testid="button-book-now">
-                Book Now
+            <a href="tel:+2347049929851">
+              <Button variant="outline" size="sm" className="gap-2" data-testid="button-call">
+                <Phone className="w-4 h-4" />
+                <span className="hidden xl:inline">Call Us</span>
               </Button>
-            </Link>
+            </a>
+            <Button size="sm" onClick={openWhatsApp} data-testid="button-book-now">
+              Book Now
+            </Button>
           </div>
 
           <Button
@@ -80,15 +84,19 @@ export default function Navigation() {
               </Link>
             ))}
             <div className="pt-4 flex flex-col gap-2">
-              <Button variant="outline" className="w-full gap-2" data-testid="button-mobile-call">
-                <Phone className="w-4 h-4" />
-                Call Us
-              </Button>
-              <Link href="/contact">
-                <Button className="w-full" onClick={() => setIsOpen(false)} data-testid="button-mobile-book">
-                  Book Now
+              <a href="tel:+2347049929851" className="w-full">
+                <Button variant="outline" className="w-full gap-2" data-testid="button-mobile-call">
+                  <Phone className="w-4 h-4" />
+                  Call Us
                 </Button>
-              </Link>
+              </a>
+              <Button
+                className="w-full"
+                onClick={() => { setIsOpen(false); openWhatsApp(); }}
+                data-testid="button-mobile-book"
+              >
+                Book Now
+              </Button>
             </div>
           </div>
         </div>

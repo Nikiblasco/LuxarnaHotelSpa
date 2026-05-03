@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import heroImage from "../../../attached_assets/luxxy.jpeg";
 
+const WHATSAPP_URL = "https://wa.me/2347049929851?text=Hello%20Luxarna%20Hotel!%20I%27d%20like%20to%20make%20a%20booking.%20Please%20help%20me.";
+
 export default function HeroSection() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -44,27 +46,26 @@ export default function HeroSection() {
             data-testid="text-hero-description"
           >
             Experience unparalleled comfort and a truly personalised stay in a
-            sought-after area of Port-harcourt.
+            sought-after area of Port Harcourt.
           </p>
 
           <div
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             style={{ animationDelay: "0.8s" }}
           >
-            <Link href="/contact">
-              <Button
-                size="lg"
-                className="min-w-[180px] text-base font-semibold shadow-lg shadow-primary/25"
-                data-testid="button-hero-book"
-              >
-                Book Your Stay
-              </Button>
-            </Link>
+            <Button
+              size="lg"
+              className="min-w-[180px] text-base font-semibold shadow-lg shadow-primary/25"
+              onClick={() => window.open(WHATSAPP_URL, "_blank")}
+              data-testid="button-hero-book"
+            >
+              Book Your Stay
+            </Button>
             <Link href="/rooms">
               <Button
                 variant="outline"
                 size="lg"
-                className="min-w-[180px] text-base font-semibold bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20"
+                className="min-w-[180px] text-base font-semibold bg-white/10 backdrop-blur-sm border-white/30 text-white"
                 data-testid="button-hero-explore"
               >
                 Explore Rooms
@@ -75,9 +76,7 @@ export default function HeroSection() {
       </div>
 
       <button
-        onClick={() =>
-          window.scrollTo({ top: window.innerHeight, behavior: "smooth" })
-        }
+        onClick={() => window.scrollTo({ top: window.innerHeight, behavior: "smooth" })}
         className="absolute bottom-8 left-1/2 -translate-x-1/2 text-white/70 hover:text-white transition-colors animate-bounce"
         data-testid="button-scroll-down"
       >
@@ -86,14 +85,8 @@ export default function HeroSection() {
 
       <style>{`
         @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(30px); }
+          to   { opacity: 1; transform: translateY(0); }
         }
         .animate-fade-in-up > * {
           opacity: 0;

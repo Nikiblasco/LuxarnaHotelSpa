@@ -1,24 +1,24 @@
 import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import RoomCard from "@/components/RoomCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 import { Room, Booking } from "@shared/schema";
 
-import KingSuiteImage from "@assets/room pics 2_1764432338683.webp";
-import QueenSuiteImage from "@assets/luxarna.jpeg";
-import deluxeRoomImage from "@assets/1764434733686_1764435313833.jpg";
+import KingSuiteImage    from "@assets/room pics 2_1764432338683.webp";
+import QueenSuiteImage   from "@assets/luxarna.jpeg";
+import deluxeRoomImage   from "@assets/1764434733686_1764435313833.jpg";
 import standardRoomImage from "@assets/generated_images/standard_hotel_room_interior.png";
 
+const WHATSAPP_NUMBER = "2347049929851";
+
 const TYPE_IMAGES: Record<string, string> = {
-  "King Suite": KingSuiteImage,
-  "Queen Suite": QueenSuiteImage,
-  "Deluxe Room": deluxeRoomImage,
+  "King Suite":   KingSuiteImage,
+  "Queen Suite":  QueenSuiteImage,
+  "Deluxe Room":  deluxeRoomImage,
   "Standard Room": standardRoomImage,
 };
 
@@ -44,36 +44,22 @@ const TYPE_DETAILS: Record<string, { description: string; amenities: string[]; f
 
 const TYPE_ORDER = ["King Suite", "Queen Suite", "Deluxe Room", "Standard Room"];
 
-export default function Rooms() {
-  const { toast } = useToast();
-  const [checkIn, setCheckIn]     = useState("");
-  const [checkOut, setCheckOut]   = useState("");
-  const [guestName, setGuestName] = useState("");
-  const [email, setEmail]         = useState("");
-  const [loadingType, setLoadingType] = useState<string | null>(null);
+const formatPrice = (amount: number) =>
+  new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", minimumFractionDigits: 0 }).format(amount);
 
-  const { data: rooms }    = useQuery<Room[]>({ queryKey: ["/api/rooms"] });
+export default function Rooms() {
+  const [checkIn,  setCheckIn]  = useState("");
+  const [checkOut, setCheckOut] = useState("");
+  const [name,     setName]     = useState("");
+
+  const { data: rooms    } = useQuery<Room[]>   ({ queryKey: ["/api/rooms"]    });
   const { data: bookings } = useQuery<Booking[]>({ queryKey: ["/api/bookings"] });
 
-  // ── Paystack payment flow ────────────────────────────────────────────────
-  const payMutation = useMutation({
-    mutationFn: async (data: { email: string; amount: number; name: string; room: string }) => {
-      const res = await apiRequest("POST", "/initialize-payment", data);
-      return res.json() as Promise<{ authorization_url: string; reference: string }>;
-    },
-    onSuccess: ({ authorization_url }) => {
-      // Redirect to Paystack hosted checkout page
-      window.location.href = authorization_url;
-    },
-    onError: (err: any) => {
-      setLoadingType(null);
-      toast({
-        title: "Payment could not be initiated",
-        description: err.message ?? "Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
+  const getNights = () => {
+    if (!checkIn || !checkOut) return 0;
+    const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
+    return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
+  };
 
   const isRoomBooked = (roomId: string) => {
     if (!bookings || !checkIn || !checkOut) return false;
@@ -89,17 +75,14 @@ export default function Rooms() {
 
   const getTypeAvailability = (roomsOfType: Room[]) => {
     const total = roomsOfType.length;
-
     if (!checkIn || !checkOut) {
       return { status: "no_dates" as const, availableRooms: roomsOfType, count: total, total };
     }
-
     const start = new Date(checkIn);
     const end   = new Date(checkOut);
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
       return { status: "invalid" as const, availableRooms: [], count: 0, total };
     }
-
     const availableRooms = roomsOfType.filter(r => !isRoomBooked(r.id));
     return {
       status: availableRooms.length === 0 ? ("occupied" as const) : ("available" as const),
@@ -109,46 +92,32 @@ export default function Rooms() {
     };
   };
 
+  const handleBookNow = (type: string, pricePerNight: number) => {
+    const nights = getNights();
+
+    // Build a friendly pre-filled WhatsApp message
+    let text = `Hello Luxarna Hotel! I'd like to book the ${type}.`;
+
+    if (name.trim()) text += ` My name is ${name.trim()}.`;
+
+    if (checkIn && checkOut && nights > 0) {
+      const fmtDate = (d: string) =>
+        new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      const total = formatPrice(pricePerNight * nights);
+      text += ` Check-in: ${fmtDate(checkIn)}, Check-out: ${fmtDate(checkOut)} (${nights} night${nights > 1 ? "s" : ""}). Total: ${total}.`;
+    }
+
+    text += " Please confirm availability and payment details. Thank you!";
+
+    const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+  };
+
   const roomsByType = rooms
     ? TYPE_ORDER.map(type => ({ type, rooms: rooms.filter(r => r.type === type) })).filter(g => g.rooms.length > 0)
     : [];
 
-  // Validate form fields before allowing Book Now
-  const formReady = guestName.trim().length > 0 && email.trim().length > 0 && checkIn && checkOut;
-
-  const getNights = () => {
-    if (!checkIn || !checkOut) return 0;
-    const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
-    return Math.max(0, Math.round(diff / (1000 * 60 * 60 * 24)));
-  };
-
-  const handleBookNow = (type: string, pricePerNight: number, availableRooms: Room[]) => {
-    const roomToBook = availableRooms[0];
-    if (!roomToBook) return;
-
-    if (!formReady) {
-      toast({
-        title: "Please fill in all fields",
-        description: "Name, email, check-in and check-out dates are required.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const nights = getNights();
-    if (nights < 1) {
-      toast({
-        title: "Invalid dates",
-        description: "Check-out must be at least one day after check-in.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const totalAmount = pricePerNight * nights;
-    setLoadingType(type);
-    payMutation.mutate({ email, amount: totalAmount, name: guestName, room: type });
-  };
+  const nights = getNights();
 
   return (
     <div className="min-h-screen bg-background">
@@ -156,33 +125,25 @@ export default function Rooms() {
       <section className="pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4">
 
-          {/* ── Booking form ── */}
+          {/* ── Optional details panel ── */}
           <div className="bg-card p-6 rounded-lg shadow-sm mb-12 border">
-            <h2 className="font-serif text-2xl mb-6">Check Availability & Book</h2>
-            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
+            <h2 className="font-serif text-2xl mb-2">Check Availability</h2>
+            <p className="text-muted-foreground text-sm mb-6">
+              Optionally fill in your details and dates — they'll be included in your WhatsApp message to us automatically.
+            </p>
+            <div className="grid sm:grid-cols-3 gap-4 items-end">
               <div className="space-y-2">
-                <Label htmlFor="guestName">Full Name</Label>
+                <Label htmlFor="name">Your Name <span className="text-muted-foreground font-normal">(optional)</span></Label>
                 <Input
-                  id="guestName"
-                  data-testid="input-guest-name"
-                  value={guestName}
-                  onChange={e => setGuestName(e.target.value)}
+                  id="name"
+                  data-testid="input-name"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
                   placeholder="e.g. Ada Okafor"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  data-testid="input-email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder="you@email.com"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="checkIn">Check-in</Label>
+                <Label htmlFor="checkIn">Check-in <span className="text-muted-foreground font-normal">(optional)</span></Label>
                 <Input
                   id="checkIn"
                   type="date"
@@ -192,7 +153,7 @@ export default function Rooms() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="checkOut">Check-out</Label>
+                <Label htmlFor="checkOut">Check-out <span className="text-muted-foreground font-normal">(optional)</span></Label>
                 <Input
                   id="checkOut"
                   type="date"
@@ -202,26 +163,15 @@ export default function Rooms() {
                 />
               </div>
             </div>
-
-            {/* Helper hint */}
-            {!formReady && (
-              <p className="text-xs text-muted-foreground mt-3">
-                Fill in all four fields above, then click <strong>Book Now</strong> on any available room — you'll be taken to our secure Paystack checkout.
-              </p>
-            )}
           </div>
 
           {/* ── Room cards ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {roomsByType.map(({ type, rooms: roomsOfType }) => {
-              const avail       = getTypeAvailability(roomsOfType);
-              const isMultiple  = roomsOfType.length > 1;
-              const isAvailable = avail.status === "available";
-              const price       = roomsOfType[0]?.price ?? 0;
-              const isPaying    = loadingType === type && payMutation.isPending;
-              const nights      = getNights();
-              const totalAmount = price * (nights > 0 ? nights : 1);
-              const totalLabel  = new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN", minimumFractionDigits: 0 }).format(totalAmount);
+              const avail      = getTypeAvailability(roomsOfType);
+              const isMultiple = roomsOfType.length > 1;
+              const price      = roomsOfType[0]?.price ?? 0;
+              const total      = nights > 0 ? price * nights : null;
 
               const badgeClass =
                 avail.status === "no_dates"
@@ -240,10 +190,15 @@ export default function Rooms() {
                   : "text-green-600 dark:text-green-400";
 
               const singleStatusText =
-                avail.status === "no_dates"  ? "Please select dates first" :
+                avail.status === "no_dates"  ? "Select dates above to check availability" :
                 avail.status === "invalid"   ? "Check-out must be after check-in" :
                 avail.status === "occupied"  ? "Sold Out for these dates" :
                 "Available";
+
+              // Button label
+              const btnLabel = total
+                ? `Book Now — ${formatPrice(total)} (${nights} night${nights > 1 ? "s" : ""})`
+                : "Book Now via WhatsApp";
 
               return (
                 <div key={type} className="relative flex flex-col">
@@ -275,17 +230,10 @@ export default function Rooms() {
 
                     <Button
                       className="w-full"
-                      data-testid={`button-book-${type.toLowerCase().replace(/\s+/g, '-')}`}
-                      disabled={!isAvailable || !formReady || isPaying}
-                      onClick={() => handleBookNow(type, price, avail.availableRooms)}
+                      data-testid={`button-book-${type.toLowerCase().replace(/\s+/g, "-")}`}
+                      onClick={() => handleBookNow(type, price)}
                     >
-                      {isPaying
-                        ? "Redirecting to payment..."
-                        : avail.status === "occupied"
-                        ? "Sold Out"
-                        : nights > 0 && formReady
-                        ? `Book Now — ${totalLabel} (${nights} night${nights > 1 ? "s" : ""})`
-                        : "Book Now"}
+                      {btnLabel}
                     </Button>
                   </div>
                 </div>
