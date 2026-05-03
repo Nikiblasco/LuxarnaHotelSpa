@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "roomId": "205",
+    "guestName": "ADAEZE EGEWU",
+    "checkIn": "2026-05-03T00:00:00.000Z",
+    "checkOut": "2026-05-04T00:00:00.000Z",
+    "id": "ecf58729-1d29-4a83-b6ee-56b98511439f"
+  },
+  {
+    "roomId": "206",
+    "guestName": "micheal",
+    "checkIn": "2026-05-03T00:00:00.000Z",
+    "checkOut": "2026-05-04T00:00:00.000Z",
+    "id": "462fd287-9441-4714-ac34-0c8698b4e0a6"
+  }
+]
