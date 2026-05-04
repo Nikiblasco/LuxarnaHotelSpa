@@ -60,11 +60,12 @@ pnpm-lock.yaml
 coverage/
 .nyc_output/
 
-# Cache
+# Cache & Replit internals
 .cache/
 .parcel-cache/
 .eslintcache
 .stylelintcache
+.upm/
 
 # Temporary files
 tmp/
