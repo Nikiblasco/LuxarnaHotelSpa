@@ -110,5 +110,18 @@
         "content": "Warm greetings! Thank you for your interest in our King Suite.\n\nThe King Suite (Room 206) is currently booked from April 6th, 2026 to April 7th, 2026.\n\nCould you please let me know your desired check-in and check-out dates? This way, I can confirm its availability for your specific stay.\n\nAlternatively, we have other beautiful rooms available, such as our Queen Suite or Deluxe Rooms."
       }
     ]
+  },
+  {
+    "timestamp": "2026-05-03T16:48:04.123Z",
+    "messages": [
+      {
+        "role": "user",
+        "content": "What are your restaurant hours and what do you serve?"
+      },
+      {
+        "role": "assistant",
+        "content": "Our restaurant serves a delicious selection of Nigerian local dishes and continental options throughout the day. Here are our hours:\n\n*   **Breakfast:** 7:00 AM – 11:30 AM\n*   **Lunch:** 12:00 PM – 4:00 PM\n*   **Dinner:** 5:00 PM – 11:30 PM\n\nWe look forward to welcoming you!"
+      }
+    ]
   }
 ]
