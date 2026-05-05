@@ -191,6 +191,16 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
       res.json([]);
     }
   });
+
+  // ── Admin auth (server-side password check) ───────────────────────────────
+  app.post("/api/admin/login", (req, res) => {
+    const { password } = req.body as { password?: string };
+    const adminPassword = process.env.ADMIN_PASSWORD ?? "luxarna-admin";
+    if (!password || password !== adminPassword) {
+      return res.status(401).json({ error: "Access denied" });
+    }
+    return res.json({ success: true });
+  });
   // ─────────────────────────────────────────────────────────────────────────
 
   return httpServer;

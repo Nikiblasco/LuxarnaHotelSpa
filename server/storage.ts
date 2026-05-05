@@ -1,24 +1,39 @@
-import {
-  type User,
-  type InsertUser,
-  type Room,
-  type Booking,
-  type InsertBooking,
+import { createClient } from "@supabase/supabase-js";
+import type {
+  User,
+  InsertUser,
+  Room,
+  Booking,
+  InsertBooking,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
-import fs from "fs";
-import path from "path";
 
-const DATA_DIR      = path.join(process.cwd(), "data");
-const BOOKINGS_FILE = path.join(DATA_DIR, "bookings.json");
+let _supabase: ReturnType<typeof createClient> | null = null;
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR);
+function getSupabase() {
+  if (_supabase) return _supabase;
+  const url = process.env.SUPABASE_URL         ?? "";
+  const key = process.env.SUPABASE_SERVICE_KEY ?? "";
+  if (!url || !key) {
+    throw new Error(
+      "SUPABASE_URL and SUPABASE_SERVICE_KEY environment variables must be set."
+    );
+  }
+  _supabase = createClient(url, key);
+  return _supabase;
 }
 
-if (!fs.existsSync(BOOKINGS_FILE)) {
-  fs.writeFileSync(BOOKINGS_FILE, JSON.stringify([]));
-}
+const ROOMS: Room[] = [
+  { id: "206", name: "King Suite",      type: "King Suite",    price: 50000 },
+  { id: "204", name: "Queen Suite",     type: "Queen Suite",   price: 40000 },
+  { id: "101", name: "Deluxe Room 101", type: "Deluxe Room",   price: 30000 },
+  { id: "102", name: "Deluxe Room 102", type: "Deluxe Room",   price: 30000 },
+  { id: "201", name: "Deluxe Room 201", type: "Deluxe Room",   price: 30000 },
+  { id: "202", name: "Deluxe Room 202", type: "Deluxe Room",   price: 30000 },
+  { id: "203", name: "Deluxe Room 203", type: "Deluxe Room",   price: 30000 },
+  { id: "205", name: "Deluxe Room 205", type: "Deluxe Room",   price: 30000 },
+  { id: "103", name: "Standard Room",   type: "Standard Room", price: 23000 },
+];
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -31,77 +46,92 @@ export interface IStorage {
   deleteBooking(id: string): Promise<boolean>;
 }
 
-export class JSONStorage implements IStorage {
-  private users: Map<string, User>;
-  private rooms: Room[];
-
-  constructor() {
-    this.users = new Map();
-    this.rooms = [
-      { id: "206", name: "King Suite",      type: "King Suite",   price: 50000 },
-      { id: "204", name: "Queen Suite",     type: "Queen Suite",  price: 40000 },
-      { id: "101", name: "Deluxe Room 101", type: "Deluxe Room",  price: 30000 },
-      { id: "102", name: "Deluxe Room 102", type: "Deluxe Room",  price: 30000 },
-      { id: "201", name: "Deluxe Room 201", type: "Deluxe Room",  price: 30000 },
-      { id: "202", name: "Deluxe Room 202", type: "Deluxe Room",  price: 30000 },
-      { id: "203", name: "Deluxe Room 203", type: "Deluxe Room",  price: 30000 },
-      { id: "205", name: "Deluxe Room 205", type: "Deluxe Room",  price: 30000 },
-      { id: "103", name: "Standard Room",   type: "Standard Room", price: 23000 },
-    ];
-  }
+export class SupabaseStorage implements IStorage {
+  private users: Map<string, User> = new Map();
 
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find((u) => u.username === username);
+    return Array.from(this.users.values()).find(u => u.username === username);
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
+    const id   = randomUUID();
     const user = { ...insertUser, id };
     this.users.set(id, user);
     return user;
   }
 
   async getRooms(): Promise<Room[]> {
-    return this.rooms;
+    return ROOMS;
   }
 
   async getBookings(): Promise<Booking[]> {
-    try {
-      const data = fs.readFileSync(BOOKINGS_FILE, "utf-8");
-      if (!data || data.trim() === "") return [];
-      const bookings = JSON.parse(data);
-      return bookings.map((b: any) => ({
-        ...b,
-        checkIn:  b.checkIn  ? new Date(b.checkIn)  : null,
-        checkOut: b.checkOut ? new Date(b.checkOut) : null,
-      }));
-    } catch (e) {
-      console.error("Error reading bookings file:", e);
-      return [];
+    const { data, error } = await getSupabase()
+      .from("bookings")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("[Storage] getBookings error:", error.message);
+      throw new Error(error.message);
     }
+
+    return (data ?? []).map(row => ({
+      id:        row.id,
+      roomId:    row.room_id,
+      guestName: row.guest_name,
+      checkIn:   new Date(row.check_in),
+      checkOut:  new Date(row.check_out),
+    }));
   }
 
-  async createBooking(insertBooking: InsertBooking): Promise<Booking> {
-    const bookings = await this.getBookings();
-    const id = randomUUID();
-    const booking = { ...insertBooking, id };
-    bookings.push(booking);
-    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2));
-    return booking;
+  async createBooking(booking: InsertBooking): Promise<Booking> {
+    const id   = randomUUID();
+    const room = ROOMS.find(r => r.id === booking.roomId);
+
+    const { data, error } = await getSupabase()
+      .from("bookings")
+      .insert({
+        id,
+        room_id:    booking.roomId,
+        room_name:  room?.name ?? booking.roomId,
+        guest_name: booking.guestName,
+        check_in:   new Date(booking.checkIn).toISOString(),
+        check_out:  new Date(booking.checkOut).toISOString(),
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error("[Storage] createBooking error:", error.message);
+      throw new Error(error.message);
+    }
+
+    return {
+      id:        data.id,
+      roomId:    data.room_id,
+      guestName: data.guest_name,
+      checkIn:   new Date(data.check_in),
+      checkOut:  new Date(data.check_out),
+    };
   }
 
   async deleteBooking(id: string): Promise<boolean> {
-    const bookings = await this.getBookings();
-    const index = bookings.findIndex((b) => b.id === id);
-    if (index === -1) return false;
-    bookings.splice(index, 1);
-    fs.writeFileSync(BOOKINGS_FILE, JSON.stringify(bookings, null, 2));
-    return true;
+    const { error, count } = await getSupabase()
+      .from("bookings")
+      .delete({ count: "exact" })
+      .eq("id", id);
+
+    if (error) {
+      console.error("[Storage] deleteBooking error:", error.message);
+      throw new Error(error.message);
+    }
+
+    return (count ?? 0) > 0;
   }
 }
 
-export const storage = new JSONStorage();
+export const storage = new SupabaseStorage();
