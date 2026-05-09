@@ -77,11 +77,17 @@ export default function PromoPopup() {
           border-radius: 18px;
           box-shadow: 0 0 70px rgba(201,168,76,0.2), 0 40px 100px rgba(0,0,0,0.8);
           max-width: 820px; width: 100%;
-          overflow: hidden;
+          max-height: 92vh;
+          overflow-y: auto;
+          overflow-x: hidden;
           animation: lpSlideUp 0.5s cubic-bezier(0.16,1,0.3,1);
         }
+        .lp-popup::-webkit-scrollbar { width: 4px; }
+        .lp-popup::-webkit-scrollbar-track { background: #0a0a0a; }
+        .lp-popup::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.4); border-radius: 2px; }
         .lp-popup::before {
           content: '';
+          position: sticky; top: 0; z-index: 2;
           display: block; height: 3px;
           background: linear-gradient(90deg, transparent, #c9a84c, #f0d080, #c9a84c, transparent);
         }
@@ -104,8 +110,7 @@ export default function PromoPopup() {
         .lp-slide { min-width: 100%; position: relative; }
         .lp-slide img {
           width: 100%; display: block;
-          max-height: 500px;
-          object-fit: cover; object-position: top center;
+          height: auto;
         }
 
         .lp-signup-btn {
