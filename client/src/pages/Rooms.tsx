@@ -16,9 +16,9 @@ import {
 import { CalendarDays } from "lucide-react";
 import { Room, Booking } from "@shared/schema";
 
-import KingSuiteImage from "@assets/room pics 2_1764432338683.webp";
+import KingSuiteImage from "@assets/niiggg.png";
 import QueenSuiteImage from "@assets/holyyyyy.png";
-import deluxeRoomImage from "@assets/1764434733686_1764435313833.jpg";
+import deluxeRoomImage from "@assets/nicholas.jpg";
 import standardRoomImage from "@assets/generated_images/standard_hotel_room_interior.png";
 
 const WHATSAPP_NUMBER = "2347049929851";

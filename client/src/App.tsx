@@ -12,6 +12,7 @@ import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 import ChatBot from "@/components/ChatBot";
+import PromoPopup from "@/components/PromoPopup";
 
 function Router() {
   return (
@@ -34,6 +35,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router />
+        <PromoPopup />
         <ChatBot />
       </TooltipProvider>
     </QueryClientProvider>

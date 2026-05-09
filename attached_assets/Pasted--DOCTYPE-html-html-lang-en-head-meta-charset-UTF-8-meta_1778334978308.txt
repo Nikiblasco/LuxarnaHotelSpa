@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Luxarna Promo Popup</title>
+  <style>
+    /* ── Overlay ── */
+    #luxarna-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 9998;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    /* ── Popup container ── */
+    #luxarna-popup {
+      position: relative;
+      z-index: 9999;
+      background: #0a0a0a;
+      border: 1px solid #c9a84c;
+      border-radius: 16px;
+      box-shadow: 0 0 60px rgba(201, 168, 76, 0.25), 0 30px 80px rgba(0,0,0,0.7);
+      max-width: 860px;
+      width: 100%;
+      overflow: hidden;
+      animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    /* ── Decorative gold top bar ── */
+    #luxarna-popup::before {
+      content: '';
+      display: block;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, #c9a84c, #f0d080, #c9a84c, transparent);
+    }
+
+    /* ── Close button ── */
+    #luxarna-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(201, 168, 76, 0.15);
+      border: 1px solid rgba(201, 168, 76, 0.5);
+      color: #c9a84c;
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+      z-index: 10;
+    }
+
+    #luxarna-close:hover {
+      background: rgba(201, 168, 76, 0.3);
+      transform: rotate(90deg);
+    }
+
+    /* ── Slides wrapper ── */
+    .lp-slides {
+      display: flex;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .lp-slide {
+      min-width: 100%;
+      position: relative;
+    }
+
+    /* ── Image inside slide ── */
+    .lp-slide img {
+      width: 100%;
+      display: block;
+      max-height: 520px;
+      object-fit: cover;
+      object-position: top center;
+    }
+
+    /* ── Floating Book Now button ── */
+    .lp-book-btn {
+      position: absolute;
+      bottom: 70px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #c9a84c, #f0d080, #c9a84c);
+      color: #0a0a0a;
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 14px 36px;
+      border-radius: 50px;
+      white-space: nowrap;
+      box-shadow: 0 8px 30px rgba(201, 168, 76, 0.45), 0 2px 8px rgba(0,0,0,0.4);
+      animation: pulse 2.5s ease-in-out infinite;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: inline-block;
+    }
+
+    .lp-book-btn:hover {
+      transform: translateX(-50%) scale(1.06);
+      box-shadow: 0 12px 40px rgba(201, 168, 76, 0.65), 0 4px 12px rgba(0,0,0,0.4);
+      animation: none;
+    }
+
+    /* ── Dot navigation ── */
+    .lp-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 16px 0 20px;
+      background: #0a0a0a;
+    }
+
+    .lp-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(201, 168, 76, 0.3);
+      border: 1px solid #c9a84c;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+    }
+
+    .lp-dot.active {
+      background: #c9a84c;
+      transform: scale(1.3);
+    }
+
+    /* ── Bottom tagline ── */
+    .lp-tagline {
+      text-align: center;
+      color: rgba(201, 168, 76, 0.6);
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      font-size: 12px;
+      letter-spacing: 1px;
+      padding-bottom: 14px;
+      background: #0a0a0a;
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(40px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0)   scale(1); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 8px 30px rgba(201, 168, 76, 0.45), 0 2px 8px rgba(0,0,0,0.4); }
+      50%       { box-shadow: 0 8px 40px rgba(201, 168, 76, 0.75), 0 2px 8px rgba(0,0,0,0.4); }
+    }
+
+    @keyframes overlayOut {
+      to { opacity: 0; pointer-events: none; }
+    }
+
+    .lp-closing {
+      animation: overlayOut 0.35s ease forwards;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     LUXARNA PROMO POPUP
+     Paste everything inside the <body> tags
+     (plus the <style> block in your <head>)
+     into your existing website HTML.
+     ════════════════════════════════════════ -->
+
+<div id="luxarna-overlay">
+  <div id="luxarna-popup">
+
+    <!-- Close button -->
+    <button id="luxarna-close" aria-label="Close promotion">&#x2715;</button>
+
+    <!-- Slides -->
+    <div class="lp-track" style="overflow:hidden;">
+      <div class="lp-slides" id="lp-slides">
+
+        <!-- Slide 1 – Loyalty Programme flyer -->
+        <div class="lp-slide">
+          <img
+            src="promo1.jpeg"
+            alt="Luxarna Hotel – Stay More, Save More loyalty promotion"
+          />
+          <a class="lp-book-btn" href="/rooms">✦ Book Now ✦</a>
+        </div>
+
+        <!-- Slide 2 – Loyalty Card -->
+        <div class="lp-slide">
+          <img
+            src="promo2.jpeg"
+            alt="Luxarna Hotel – Loyalty Card: collect stamps and enjoy rewards"
+          />
+          <a class="lp-book-btn" href="/rooms">✦ Book Now ✦</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Dot navigation -->
+    <div class="lp-dots" id="lp-dots">
+      <div class="lp-dot active" data-index="0"></div>
+      <div class="lp-dot"        data-index="1"></div>
+    </div>
+
+    <p class="lp-tagline">Experience Elevated &nbsp;·&nbsp; Terms and Conditions Apply.</p>
+  </div>
+</div>
+
+<script>
+  /* ── Slideshow ── */
+  const slides   = document.getElementById('lp-slides');
+  const dots     = document.querySelectorAll('.lp-dot');
+  let current    = 0;
+  let autoTimer;
+
+  function goTo(index) {
+    current = index;
+    slides.style.transform = `translateX(-${current * 100}%)`;
+    dots.forEach((d, i) => d.classList.toggle('active', i === current));
+  }
+
+  function next() { goTo((current + 1) % 2); }
+
+  function startAuto() { autoTimer = setInterval(next, 4000); }
+  function stopAuto()  { clearInterval(autoTimer); }
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      stopAuto();
+      goTo(Number(dot.dataset.index));
+      startAuto();
+    });
+  });
+
+  startAuto();
+
+  /* ── Close / dismiss ── */
+  function closePopup() {
+    const overlay = document.getElementById('luxarna-overlay');
+    overlay.classList.add('lp-closing');
+    stopAuto();
+    setTimeout(() => overlay.remove(), 350);
+  }
+
+  document.getElementById('luxarna-close').addEventListener('click', closePopup);
+
+  // Also close if user clicks the dark backdrop
+  document.getElementById('luxarna-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closePopup();
+  });
+
+  // Optional: auto-dismiss after 20 seconds if untouched
+  // setTimeout(closePopup, 20000);
+</script>
+
+</body>
+</html>
