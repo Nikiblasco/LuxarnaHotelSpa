@@ -65,39 +65,37 @@ export default function PromoPopup() {
           backdrop-filter: blur(5px);
           z-index: 9998;
           display: flex; align-items: center; justify-content: center;
-          padding: 16px;
+          padding: 12px;
           animation: lpFadeIn 0.4s ease;
         }
         .lp-overlay.closing { animation: lpFadeOut 0.35s ease forwards; }
 
+        /* Popup is a flex column — image shrinks to fit, footer stays fixed */
         .lp-popup {
           position: relative;
           background: #080808;
           border: 1px solid #c9a84c;
           border-radius: 18px;
           box-shadow: 0 0 70px rgba(201,168,76,0.2), 0 40px 100px rgba(0,0,0,0.8);
-          max-width: 820px; width: 100%;
-          max-height: 92vh;
-          overflow-y: auto;
-          overflow-x: hidden;
+          max-width: 760px; width: 100%;
+          max-height: 94vh;
+          display: flex; flex-direction: column;
+          overflow: hidden;
           animation: lpSlideUp 0.5s cubic-bezier(0.16,1,0.3,1);
         }
-        .lp-popup::-webkit-scrollbar { width: 4px; }
-        .lp-popup::-webkit-scrollbar-track { background: #0a0a0a; }
-        .lp-popup::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.4); border-radius: 2px; }
+        /* Gold top bar */
         .lp-popup::before {
-          content: '';
-          position: sticky; top: 0; z-index: 2;
+          content: ''; flex-shrink: 0;
           display: block; height: 3px;
           background: linear-gradient(90deg, transparent, #c9a84c, #f0d080, #c9a84c, transparent);
         }
 
         .lp-close {
-          position: absolute; top: 14px; right: 14px;
-          width: 34px; height: 34px; border-radius: 50%;
+          position: absolute; top: 10px; right: 10px;
+          width: 30px; height: 30px; border-radius: 50%;
           background: rgba(201,168,76,0.12);
           border: 1px solid rgba(201,168,76,0.45);
-          color: #c9a84c; font-size: 17px;
+          color: #c9a84c; font-size: 15px;
           cursor: pointer;
           display: flex; align-items: center; justify-content: center;
           transition: background 0.2s, transform 0.25s;
@@ -105,42 +103,35 @@ export default function PromoPopup() {
         }
         .lp-close:hover { background: rgba(201,168,76,0.28); transform: rotate(90deg); }
 
-        .lp-track { overflow: hidden; }
-        .lp-slides { display: flex; transition: transform 0.55s cubic-bezier(0.16,1,0.3,1); }
-        .lp-slide { min-width: 100%; position: relative; }
+        /* Image area grows to fill space, image scales to fit fully */
+        .lp-track { flex: 1; min-height: 0; overflow: hidden; }
+        .lp-slides {
+          display: flex; height: 100%;
+          transition: transform 0.55s cubic-bezier(0.16,1,0.3,1);
+        }
+        .lp-slide {
+          min-width: 100%; height: 100%;
+          display: flex; align-items: center; justify-content: center;
+          background: #000;
+        }
         .lp-slide img {
-          width: 100%; display: block;
-          height: auto;
+          max-width: 100%; max-height: 100%;
+          width: auto; height: auto;
+          display: block; object-fit: contain;
         }
 
-        .lp-signup-btn {
-          display: block;
-          margin: 0 auto 4px;
-          background: linear-gradient(135deg, #b8882e, #f0d080, #b8882e);
-          color: #080808;
-          font-family: 'Cormorant Garamond', Georgia, serif;
-          font-weight: 700; font-size: 15px;
-          letter-spacing: 2.5px; text-transform: uppercase;
-          border: none;
-          padding: 13px 40px; border-radius: 50px;
-          cursor: pointer; white-space: nowrap;
-          box-shadow: 0 8px 32px rgba(201,168,76,0.5), 0 2px 8px rgba(0,0,0,0.5);
-          animation: lpPulse 2.8s ease-in-out infinite;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .lp-signup-btn:hover {
-          transform: scale(1.07);
-          box-shadow: 0 12px 44px rgba(201,168,76,0.7), 0 4px 12px rgba(0,0,0,0.5);
-          animation: none;
-        }
-
-        .lp-dots {
-          display: flex; justify-content: center;
-          gap: 8px; padding: 16px 0 12px;
+        /* Fixed footer below image */
+        .lp-bottom {
+          flex-shrink: 0;
           background: #080808;
+          padding: 10px 16px 12px;
+          display: flex; flex-direction: column; align-items: center; gap: 8px;
         }
+
+        /* Dots */
+        .lp-dots { display: flex; justify-content: center; gap: 8px; }
         .lp-dot {
-          width: 8px; height: 8px; border-radius: 50%;
+          width: 7px; height: 7px; border-radius: 50%;
           background: rgba(201,168,76,0.25);
           border: 1px solid #c9a84c;
           cursor: pointer;
@@ -148,26 +139,57 @@ export default function PromoPopup() {
         }
         .lp-dot.active { background: #c9a84c; transform: scale(1.35); }
 
-        .lp-footer {
-          text-align: center;
+        /* Sign-up button — responsive sizing */
+        .lp-signup-btn {
+          background: linear-gradient(135deg, #b8882e, #f0d080, #b8882e);
+          color: #080808;
+          font-family: 'Cormorant Garamond', Georgia, serif;
+          font-weight: 700; font-size: 13px;
+          letter-spacing: 2px; text-transform: uppercase;
+          border: none;
+          padding: 10px 28px; border-radius: 50px;
+          cursor: pointer; white-space: nowrap;
+          box-shadow: 0 6px 24px rgba(201,168,76,0.5);
+          animation: lpPulse 2.8s ease-in-out infinite;
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .lp-signup-btn:hover {
+          transform: scale(1.06);
+          box-shadow: 0 10px 36px rgba(201,168,76,0.7);
+          animation: none;
+        }
+
+        .lp-tagline {
           color: rgba(201,168,76,0.5);
           font-family: 'Cormorant Garamond', Georgia, serif;
-          font-style: italic; font-size: 12px;
-          letter-spacing: 1px;
-          padding: 0 0 16px;
-          background: #080808;
-          margin: 0;
+          font-style: italic; font-size: 11px;
+          letter-spacing: 0.8px; margin: 0; text-align: center;
+        }
+
+        /* Tablet */
+        @media (max-width: 768px) {
+          .lp-popup { max-width: 98vw; max-height: 92vh; border-radius: 14px; }
+          .lp-signup-btn { font-size: 12px; padding: 9px 22px; letter-spacing: 1.5px; }
+        }
+
+        /* Mobile */
+        @media (max-width: 480px) {
+          .lp-overlay { padding: 8px; }
+          .lp-popup { max-height: 90vh; border-radius: 12px; }
+          .lp-bottom { padding: 8px 12px 10px; gap: 6px; }
+          .lp-signup-btn { font-size: 11px; padding: 8px 18px; letter-spacing: 1px; }
+          .lp-tagline { font-size: 10px; }
         }
 
         @keyframes lpFadeIn  { from { opacity:0 } to { opacity:1 } }
         @keyframes lpFadeOut { to   { opacity:0 } }
         @keyframes lpSlideUp {
-          from { opacity:0; transform: translateY(40px) scale(0.97); }
+          from { opacity:0; transform: translateY(30px) scale(0.97); }
           to   { opacity:1; transform: translateY(0) scale(1); }
         }
         @keyframes lpPulse {
-          0%,100% { box-shadow: 0 8px 32px rgba(201,168,76,0.5), 0 2px 8px rgba(0,0,0,0.5); }
-          50%     { box-shadow: 0 10px 44px rgba(201,168,76,0.8), 0 2px 8px rgba(0,0,0,0.5); }
+          0%,100% { box-shadow: 0 6px 24px rgba(201,168,76,0.5); }
+          50%     { box-shadow: 0 8px 36px rgba(201,168,76,0.8); }
         }
       `}</style>
 
@@ -190,24 +212,22 @@ export default function PromoPopup() {
             </div>
           </div>
 
-          <div className="lp-dots">
-            {slides.map((_, i) => (
-              <div
-                key={i}
-                className={`lp-dot${i === current ? " active" : ""}`}
-                onClick={() => goTo(i)}
-                data-testid={`button-loyalty-dot-${i}`}
-              />
-            ))}
-          </div>
-
-          <div style={{ background: "#080808", padding: "12px 24px 4px" }}>
+          <div className="lp-bottom">
+            <div className="lp-dots">
+              {slides.map((_, i) => (
+                <div
+                  key={i}
+                  className={`lp-dot${i === current ? " active" : ""}`}
+                  onClick={() => goTo(i)}
+                  data-testid={`button-loyalty-dot-${i}`}
+                />
+              ))}
+            </div>
             <button className="lp-signup-btn" onClick={handleSignUp} data-testid="button-loyalty-signup">
               ✦ Join Loyalty Programme ✦
             </button>
+            <p className="lp-tagline">It's free to join · Terms and Conditions Apply.</p>
           </div>
-
-          <p className="lp-footer">It's free to join · Terms and Conditions Apply.</p>
         </div>
       </div>
     </>
