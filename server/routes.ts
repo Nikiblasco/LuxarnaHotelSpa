@@ -110,7 +110,6 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
     }
 
     try {
-      // ── Fetch live booking data to inject into the system prompt ──────────
       const [allBookings, allRooms] = await Promise.all([
         storage.getBookings(),
         storage.getRooms(),
@@ -149,7 +148,6 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
       bookingContext += "- If a room is shown as booked for a date range the guest wants, tell them clearly and suggest alternative rooms or dates.\n";
       bookingContext += "- If a room is AVAILABLE, encourage the guest to click 'Book Now' on the Rooms page to start a WhatsApp booking.\n";
       bookingContext += "- Never reveal guest names — only booking dates.\n";
-      // ─────────────────────────────────────────────────────────────────────
 
       const model = genAI.getGenerativeModel({
         model: "gemini-2.5-flash",
@@ -166,7 +164,6 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
       const result = await chat.sendMessage(lastMessage);
       const reply = result.response.text();
 
-      // Log conversation
       try {
         const logs = JSON.parse(fs.readFileSync(CHAT_LOG_FILE, "utf-8"));
         logs.push({
@@ -229,32 +226,6 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
           reply_to: "luxarnahotel@gmail.com",
           to: email.trim().toLowerCase(),
           subject: "Welcome to the Luxarna Loyalty Programme ✦",
-          html: `<p>Welcome ${name.trim()}! You have joined the Luxarna Loyalty Programme.</p>`,
-        }),
-      });
-
-      const emailData = await emailRes.json();
-      console.log("[Loyalty] Resend response:", JSON.stringify(emailData));
-
-      return res.json({ success: true });
-    } catch (err: any) {
-      console.error("[Loyalty] Caught error:", err.message);
-      return res.status(500).json({ error: err.message ?? "Server error" });
-    }
-  });
-  // ─────────────────────────────────────────────────────────────────────────
-      // Send confirmation email directly via Resend
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: "Luxarna Hotel & Spa <loyalty@luxarnahotel.com>",
-          reply_to: "luxarnahotel@gmail.com",
-          to: email.trim().toLowerCase(),
-          subject: "Welcome to the Luxarna Loyalty Programme ✦",
           html: `
             <div style="background:#080808; padding:48px 32px; font-family:Georgia,serif; max-width:560px; margin:0 auto;">
               <div style="text-align:center; border-bottom:1px solid #c9a84c; padding-bottom:28px; margin-bottom:32px;">
@@ -286,12 +257,17 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
         }),
       });
 
+      const emailData = await emailRes.json();
+      console.log("[Loyalty] Resend response:", JSON.stringify(emailData));
+
       return res.json({ success: true });
     } catch (err: any) {
+      console.error("[Loyalty] Caught error:", err.message);
       return res.status(500).json({ error: err.message ?? "Server error" });
     }
   });
   // ─────────────────────────────────────────────────────────────────────────
+
   // ── Admin auth (server-side password check) ───────────────────────────────
   app.post("/api/admin/login", (req, res) => {
     const { password } = req.body as { password?: string };
