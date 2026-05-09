@@ -202,6 +202,7 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
     try {
       const { getSupabase } = await import("./storage");
       const supabase = getSupabase();
+
       const { error } = await supabase
         .from("loyalty_members")
         .insert([{ name: name.trim(), phone: phone.trim(), email: email.trim().toLowerCase() }]);
@@ -210,9 +211,38 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
         if (error.code === "23505") {
           return res.status(409).json({ error: "This email is already registered. Welcome back!" });
         }
+        console.error("[Loyalty] Supabase insert error:", error.message);
         return res.status(500).json({ error: "Something went wrong. Please try again." });
       }
 
+      console.log("[Loyalty] Insert success, sending email to:", email);
+      console.log("[Loyalty] RESEND_API_KEY present:", !!process.env.RESEND_API_KEY);
+
+      const emailRes = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Luxarna Hotel & Spa <loyalty@luxarnahotel.com>",
+          reply_to: "luxarnahotel@gmail.com",
+          to: email.trim().toLowerCase(),
+          subject: "Welcome to the Luxarna Loyalty Programme ✦",
+          html: `<p>Welcome ${name.trim()}! You have joined the Luxarna Loyalty Programme.</p>`,
+        }),
+      });
+
+      const emailData = await emailRes.json();
+      console.log("[Loyalty] Resend response:", JSON.stringify(emailData));
+
+      return res.json({ success: true });
+    } catch (err: any) {
+      console.error("[Loyalty] Caught error:", err.message);
+      return res.status(500).json({ error: err.message ?? "Server error" });
+    }
+  });
+  // ─────────────────────────────────────────────────────────────────────────
       // Send confirmation email directly via Resend
       await fetch("https://api.resend.com/emails", {
         method: "POST",
