@@ -75,7 +75,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/contact">
+            <Link href="/rooms">
               <Button size="lg" className="min-w-[180px]" data-testid="button-cta-book">
                 Book Your Stay
               </Button>

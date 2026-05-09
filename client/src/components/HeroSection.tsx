@@ -53,14 +53,15 @@ export default function HeroSection() {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             style={{ animationDelay: "0.8s" }}
           >
-            <Button
-              size="lg"
-              className="min-w-[180px] text-base font-semibold shadow-lg shadow-primary/25"
-              onClick={() => window.open(WHATSAPP_URL, "_blank")}
-              data-testid="button-hero-book"
-            >
-              Book Your Stay
-            </Button>
+            <Link href="/rooms">
+              <Button
+                size="lg"
+                className="min-w-[180px] text-base font-semibold shadow-lg shadow-primary/25"
+                data-testid="button-hero-book"
+              >
+                Book Your Stay
+              </Button>
+            </Link>
             <Link href="/rooms">
               <Button
                 variant="outline"
