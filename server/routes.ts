@@ -213,13 +213,55 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
         return res.status(500).json({ error: "Something went wrong. Please try again." });
       }
 
+      // Send confirmation email directly via Resend
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "Luxarna Hotel & Spa <loyalty@luxarnahotel.com>",
+          reply_to: "luxarnahotel@gmail.com",
+          to: email.trim().toLowerCase(),
+          subject: "Welcome to the Luxarna Loyalty Programme ✦",
+          html: `
+            <div style="background:#080808; padding:48px 32px; font-family:Georgia,serif; max-width:560px; margin:0 auto;">
+              <div style="text-align:center; border-bottom:1px solid #c9a84c; padding-bottom:28px; margin-bottom:32px;">
+                <p style="color:#c9a84c; letter-spacing:6px; font-size:11px; margin-bottom:8px;">✦ ✦ ✦</p>
+                <h1 style="color:#c9a84c; font-size:28px; letter-spacing:6px; margin:0;">LUXARNA</h1>
+                <p style="color:rgba(201,168,76,0.5); letter-spacing:4px; font-size:11px; margin:4px 0 0;">HOTEL & SPA</p>
+              </div>
+              <h2 style="color:#f5f0e8; font-size:22px; font-weight:400; margin-bottom:12px;">Welcome, ${name.trim()}.</h2>
+              <p style="color:rgba(255,255,255,0.55); font-size:16px; line-height:1.7; margin-bottom:28px;">
+                You are now a member of the Luxarna Loyalty Programme. Every stay brings you closer to something special.
+              </p>
+              <div style="border:1px solid rgba(201,168,76,0.3); border-radius:12px; padding:24px; margin-bottom:28px;">
+                <p style="color:#c9a84c; letter-spacing:3px; font-size:11px; margin-bottom:16px;">YOUR REWARDS</p>
+                <p style="color:#f5f0e8; font-size:15px; margin-bottom:10px;">✦ &nbsp;Stay 4 nights → get <strong style="color:#c9a84c;">50% off your 5th night</strong></p>
+                <p style="color:#f5f0e8; font-size:15px;">✦ &nbsp;Stay 9 nights → get your <strong style="color:#c9a84c;">10th night completely free</strong></p>
+              </div>
+              <p style="color:rgba(255,255,255,0.35); font-size:13px; line-height:1.6; margin-bottom:32px;">
+                Simply mention your membership at reception on your next visit and we will stamp your loyalty card. You can win multiple times within a year.
+              </p>
+              <div style="text-align:center; border-top:1px solid rgba(201,168,76,0.2); padding-top:24px;">
+                <p style="color:rgba(201,168,76,0.5); font-style:italic; font-size:14px; margin-bottom:4px;">Thank you for choosing Luxarna.</p>
+                <p style="color:rgba(255,255,255,0.25); font-size:12px;">We look forward to welcoming you again.</p>
+                <p style="color:rgba(255,255,255,0.2); font-size:11px; margin-top:16px; letter-spacing:1px;">
+                  +234 704 992 9851 &nbsp;·&nbsp; luxarnahotel.com &nbsp;·&nbsp; @luxarnahotel
+                </p>
+              </div>
+            </div>
+          `,
+        }),
+      });
+
       return res.json({ success: true });
     } catch (err: any) {
       return res.status(500).json({ error: err.message ?? "Server error" });
     }
   });
   // ─────────────────────────────────────────────────────────────────────────
-
   // ── Admin auth (server-side password check) ───────────────────────────────
   app.post("/api/admin/login", (req, res) => {
     const { password } = req.body as { password?: string };
