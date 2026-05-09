@@ -212,6 +212,7 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
         }
         return res.status(500).json({ error: "Something went wrong. Please try again." });
       }
+
       return res.json({ success: true });
     } catch (err: any) {
       return res.status(500).json({ error: err.message ?? "Server error" });
