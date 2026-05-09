@@ -11,6 +11,7 @@ import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
+import LoyaltySignUp from "@/pages/LoyaltySignUp";
 import ChatBot from "@/components/ChatBot";
 import PromoPopup from "@/components/PromoPopup";
 
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
       <Route path="/admin" component={Admin} />
+      <Route path="/loyalty-signup" component={LoyaltySignUp} />
       <Route component={NotFound} />
     </Switch>
   );

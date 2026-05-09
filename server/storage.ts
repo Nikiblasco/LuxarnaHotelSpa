@@ -10,7 +10,7 @@ import { randomUUID } from "crypto";
 
 let _supabase: ReturnType<typeof createClient> | null = null;
 
-function getSupabase() {
+export function getSupabase() {
   if (_supabase) return _supabase;
   const url = process.env.SUPABASE_URL         ?? "";
   const key = process.env.SUPABASE_SERVICE_KEY ?? "";

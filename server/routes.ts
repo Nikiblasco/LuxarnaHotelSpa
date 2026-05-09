@@ -192,6 +192,33 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
     }
   });
 
+  // ── Loyalty Programme sign-up ─────────────────────────────────────────────
+  app.post("/api/loyalty", async (req, res) => {
+    const { name, phone, email } = req.body as { name?: string; phone?: string; email?: string };
+    if (!name || !phone || !email) {
+      return res.status(400).json({ error: "Name, phone and email are all required." });
+    }
+
+    try {
+      const { getSupabase } = await import("./storage");
+      const supabase = getSupabase();
+      const { error } = await supabase
+        .from("loyalty_members")
+        .insert([{ name: name.trim(), phone: phone.trim(), email: email.trim().toLowerCase() }]);
+
+      if (error) {
+        if (error.code === "23505") {
+          return res.status(409).json({ error: "This email is already registered. Welcome back!" });
+        }
+        return res.status(500).json({ error: "Something went wrong. Please try again." });
+      }
+      return res.json({ success: true });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message ?? "Server error" });
+    }
+  });
+  // ─────────────────────────────────────────────────────────────────────────
+
   // ── Admin auth (server-side password check) ───────────────────────────────
   app.post("/api/admin/login", (req, res) => {
     const { password } = req.body as { password?: string };
