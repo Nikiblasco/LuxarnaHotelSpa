@@ -109,23 +109,22 @@ export default function PromoPopup() {
         }
 
         .lp-signup-btn {
-          position: absolute;
-          bottom: 60px; left: 50%;
-          transform: translateX(-50%);
+          display: block;
+          margin: 0 auto 4px;
           background: linear-gradient(135deg, #b8882e, #f0d080, #b8882e);
           color: #080808;
           font-family: 'Cormorant Garamond', Georgia, serif;
           font-weight: 700; font-size: 15px;
           letter-spacing: 2.5px; text-transform: uppercase;
           border: none;
-          padding: 14px 40px; border-radius: 50px;
+          padding: 13px 40px; border-radius: 50px;
           cursor: pointer; white-space: nowrap;
           box-shadow: 0 8px 32px rgba(201,168,76,0.5), 0 2px 8px rgba(0,0,0,0.5);
           animation: lpPulse 2.8s ease-in-out infinite;
           transition: transform 0.2s, box-shadow 0.2s;
         }
         .lp-signup-btn:hover {
-          transform: translateX(-50%) scale(1.07);
+          transform: scale(1.07);
           box-shadow: 0 12px 44px rgba(201,168,76,0.7), 0 4px 12px rgba(0,0,0,0.5);
           animation: none;
         }
@@ -181,9 +180,6 @@ export default function PromoPopup() {
               {slides.map((slide, i) => (
                 <div className="lp-slide" key={i}>
                   <img src={slide.src} alt={slide.alt} data-testid={`img-loyalty-${i}`} />
-                  <button className="lp-signup-btn" onClick={handleSignUp} data-testid={`button-loyalty-signup-${i}`}>
-                    ✦ Join Loyalty Programme ✦
-                  </button>
                 </div>
               ))}
             </div>
@@ -198,6 +194,12 @@ export default function PromoPopup() {
                 data-testid={`button-loyalty-dot-${i}`}
               />
             ))}
+          </div>
+
+          <div style={{ background: "#080808", padding: "12px 24px 4px" }}>
+            <button className="lp-signup-btn" onClick={handleSignUp} data-testid="button-loyalty-signup">
+              ✦ Join Loyalty Programme ✦
+            </button>
           </div>
 
           <p className="lp-footer">It's free to join · Terms and Conditions Apply.</p>
