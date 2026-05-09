@@ -75,25 +75,6 @@ export default function Contact() {
               ))}
             </div>
 
-            {/* WhatsApp CTA */}
-            <Card className="p-6 bg-gradient-to-br from-green-500/10 to-green-500/5 border-green-500/20">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-green-500 flex items-center justify-center shrink-0">
-                  <SiWhatsapp className="w-7 h-7 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground mb-1">Chat on WhatsApp</h3>
-                  <p className="text-muted-foreground text-sm mb-3">Quick responses during business hours</p>
-                  <Button
-                    onClick={handleWhatsAppClick}
-                    data-testid="button-whatsapp"
-                  >
-                    <SiWhatsapp className="w-4 h-4 mr-2" />
-                    Start Chat
-                  </Button>
-                </div>
-              </div>
-            </Card>
 
             {/* Map */}
             <div className="w-full h-[420px] rounded-xl overflow-hidden shadow-sm border relative">
