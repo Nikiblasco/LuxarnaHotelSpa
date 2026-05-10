@@ -17,10 +17,11 @@ export default function Admin() {
   const [password, setPassword] = useState("");
   const [isAuth,   setIsAuth]   = useState(false);
 
-  const [roomId,     setRoomId]     = useState("");
-  const [guestName,  setGuestName]  = useState("");
-  const [checkIn,    setCheckIn]    = useState("");
-  const [checkOut,   setCheckOut]   = useState("");
+  const [roomId,       setRoomId]       = useState("");
+  const [guestName,    setGuestName]    = useState("");
+  const [checkIn,      setCheckIn]      = useState("");
+  const [checkOut,     setCheckOut]     = useState("");
+  const [checkinTime,  setCheckinTime]  = useState("");
 
   // ── Server-side login ──────────────────────────────────────────────────────
   const loginMutation = useMutation({
@@ -49,6 +50,7 @@ export default function Admin() {
       setCheckIn("");
       setCheckOut("");
       setRoomId("");
+      setCheckinTime("");
     },
     onError: (err: any) => {
       toast({ title: "Failed to add walk-in", description: err.message, variant: "destructive" });
@@ -112,7 +114,7 @@ export default function Admin() {
           <CardHeader>
             <CardTitle>Add Walk-in Guest</CardTitle>
           </CardHeader>
-          <CardContent className="grid md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+          <CardContent className="grid md:grid-cols-2 lg:grid-cols-7 gap-4 items-end">
             <div className="space-y-2">
               <Label>Room</Label>
               <select
@@ -153,7 +155,7 @@ export default function Admin() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Check-in</Label>
+              <Label>Check-in Date</Label>
               <Input
                 type="date"
                 data-testid="input-walkin-checkin"
@@ -162,7 +164,16 @@ export default function Admin() {
               />
             </div>
             <div className="space-y-2">
-              <Label>Check-out</Label>
+              <Label>Check-in Time</Label>
+              <Input
+                type="time"
+                data-testid="input-walkin-checkin-time"
+                value={checkinTime}
+                onChange={e => setCheckinTime(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Check-out Date</Label>
               <Input
                 type="date"
                 data-testid="input-walkin-checkout"
@@ -170,9 +181,30 @@ export default function Admin() {
                 onChange={e => setCheckOut(e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label>Check-out Time</Label>
+              <Input
+                value="12:00 PM"
+                disabled
+                className="bg-muted text-muted-foreground cursor-not-allowed"
+              />
+            </div>
             <Button
               data-testid="button-add-booking"
-              onClick={() => bookingMutation.mutate({ roomId, guestName, checkIn, checkOut })}
+              onClick={() => bookingMutation.mutate({
+                roomId,
+                guestName,
+                checkIn,
+                checkOut,
+                checkinTime: checkinTime
+                  ? new Date(`1970-01-01T${checkinTime}`).toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })
+                  : undefined,
+                checkoutTime: "12:00 PM",
+              })}
               disabled={bookingMutation.isPending || !roomId || !guestName || !checkIn || !checkOut}
             >
               {bookingMutation.isPending ? (
@@ -194,14 +226,16 @@ export default function Admin() {
                     <th className="p-3">Guest</th>
                     <th className="p-3">Room</th>
                     <th className="p-3">Check-in</th>
+                    <th className="p-3">Check-in Time</th>
                     <th className="p-3">Check-out</th>
+                    <th className="p-3">Check-out Time</th>
                     <th className="p-3">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {bookings && bookings.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="p-6 text-center text-muted-foreground">
+                      <td colSpan={7} className="p-6 text-center text-muted-foreground">
                         No bookings yet
                       </td>
                     </tr>
@@ -210,8 +244,10 @@ export default function Admin() {
                     <tr key={b.id} className="border-b" data-testid={`row-booking-${b.id}`}>
                       <td className="p-3 font-medium">{b.guestName}</td>
                       <td className="p-3">{rooms?.find(r => r.id === b.roomId)?.name ?? b.roomId}</td>
-                      <td className="p-3">{format(new Date(b.checkIn),  "MMM dd, yyyy")}</td>
+                      <td className="p-3">{format(new Date(b.checkIn), "MMM dd, yyyy")}</td>
+                      <td className="p-3">{b.checkinTime ?? "—"}</td>
                       <td className="p-3">{format(new Date(b.checkOut), "MMM dd, yyyy")}</td>
+                      <td className="p-3">{b.checkoutTime ?? "12:00 PM"}</td>
                       <td className="p-3">
                         <Button
                           variant="destructive"
