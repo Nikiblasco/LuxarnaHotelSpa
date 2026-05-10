@@ -1,14 +1,5 @@
 import dotenv from "dotenv";
 dotenv.config();
-import { fileURLToPath } from "url";
-import { dirname, resolve } from "path";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-dotenv.config({ path: resolve(__dirname, "../.env") });
-dotenv.config({ path: resolve(__dirname, "../.env") });
-console.log("ENV PATH:", resolve(__dirname, "../.env"));
-console.log("KEY:", process.env.GOOGLE_API_KEY);
-
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
