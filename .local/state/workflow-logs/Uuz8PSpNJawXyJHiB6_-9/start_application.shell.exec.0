@@ -1,0 +1,119 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+[1G[0K[Gemini] API key loaded: AIzaSy…
+2:33:36 PM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+[1m[33mwarn[39m[22m - The class `duration-[10000ms]` is ambiguous and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, replace it with `duration-&lsqb;10000ms&rsqb;` to silence this warning.
+
+[1m[33mwarn[39m[22m - The class `duration-[2000ms]` is ambiguous and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, replace it with `duration-&lsqb;2000ms&rsqb;` to silence this warning.
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+2:33:50 PM [express] GET /api/rooms 304 in 2ms :: [{"id":"206","name":"King Suite","type":"King Suite","price":50000},{"id":"204","name":"Queen Suite","type":"Queen Suite","price":40000},{"id":"101","name":"Deluxe Room 101","type":"Deluxe Room","price":30000},{"id":"102","name":"Deluxe Room 102","type":"Deluxe Room","price":30000},{"id":"201","name":"Deluxe Room 201","type":"Deluxe Room","price":30000},{"id":"202","name":"Deluxe Room 202","type":"Deluxe Room","price":30000},{"id":"203","name":"Deluxe Room 203","type":"Deluxe Room","price":30000},{"id":"205","name":"Deluxe Room 205","type":"Deluxe Room","price":30000},{"id":"103","name":"Standard Room","type":"Standard Room","price":23000}]
+2:33:51 PM [express] GET /api/bookings 304 in 772ms :: [{"id":"4c5c062d-2c6d-4de1-8874-36029b60e239","roomId":"201","guestName":"WISDOM FRANK","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"},{"id":"9e80111d-467b-4e03-843f-4d9c9aa45052","roomId":"103","guestName":"WISDOM FRANK","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"},{"id":"c213054b-d027-4ecb-88ba-1a8daeb6e464","roomId":"203","guestName":"EZINNE JESSICA","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"},{"id":"d1a0c5b5-c1b7-4c9c-a9d9-17d52603f122","roomId":"205","guestName":"MERCY ODET","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"}]
+2:43:36 PM [express] GET /api/rooms 304 in 1ms :: [{"id":"206","name":"King Suite","type":"King Suite","price":50000},{"id":"204","name":"Queen Suite","type":"Queen Suite","price":40000},{"id":"101","name":"Deluxe Room 101","type":"Deluxe Room","price":30000},{"id":"102","name":"Deluxe Room 102","type":"Deluxe Room","price":30000},{"id":"201","name":"Deluxe Room 201","type":"Deluxe Room","price":30000},{"id":"202","name":"Deluxe Room 202","type":"Deluxe Room","price":30000},{"id":"203","name":"Deluxe Room 203","type":"Deluxe Room","price":30000},{"id":"205","name":"Deluxe Room 205","type":"Deluxe Room","price":30000},{"id":"103","name":"Standard Room","type":"Standard Room","price":23000}]
+2:43:37 PM [express] GET /api/bookings 304 in 703ms :: [{"id":"4c5c062d-2c6d-4de1-8874-36029b60e239","roomId":"201","guestName":"WISDOM FRANK","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"},{"id":"9e80111d-467b-4e03-843f-4d9c9aa45052","roomId":"103","guestName":"WISDOM FRANK","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"},{"id":"c213054b-d027-4ecb-88ba-1a8daeb6e464","roomId":"203","guestName":"EZINNE JESSICA","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"},{"id":"d1a0c5b5-c1b7-4c9c-a9d9-17d52603f122","roomId":"205","guestName":"MERCY ODET","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"}]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m2:58:55 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx?v=vJ-1N2-q1BBj458HmmAd2, /src/index.css?v=vJ-1N2-q1BBj458HmmAd2[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m2:58:55 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx?v=vJ-1N2-q1BBj458HmmAd2, /src/index.css?v=vJ-1N2-q1BBj458HmmAd2[22m [33m(x2)[39m
+2:59:33 PM [express] GET /api/rooms 304 in 1ms :: [{"id":"206","name":"King Suite","type":"King Suite","price":50000},{"id":"204","name":"Queen Suite","type":"Queen Suite","price":40000},{"id":"101","name":"Deluxe Room 101","type":"Deluxe Room","price":30000},{"id":"102","name":"Deluxe Room 102","type":"Deluxe Room","price":30000},{"id":"201","name":"Deluxe Room 201","type":"Deluxe Room","price":30000},{"id":"202","name":"Deluxe Room 202","type":"Deluxe Room","price":30000},{"id":"203","name":"Deluxe Room 203","type":"Deluxe Room","price":30000},{"id":"205","name":"Deluxe Room 205","type":"Deluxe Room","price":30000},{"id":"103","name":"Standard Room","type":"Standard Room","price":23000}]
+2:59:34 PM [express] GET /api/bookings 304 in 862ms :: [{"id":"4c5c062d-2c6d-4de1-8874-36029b60e239","roomId":"201","guestName":"WISDOM FRANK","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"},{"id":"9e80111d-467b-4e03-843f-4d9c9aa45052","roomId":"103","guestName":"WISDOM FRANK","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"},{"id":"c213054b-d027-4ecb-88ba-1a8daeb6e464","roomId":"203","guestName":"EZINNE JESSICA","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"},{"id":"d1a0c5b5-c1b7-4c9c-a9d9-17d52603f122","roomId":"205","guestName":"MERCY ODET","checkIn":"2026-05-09T00:00:00.000Z","checkOut":"2026-05-10T00:00:00.000Z"}]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m3:01:55 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/Contact.tsx, /src/index.css?v=vJ-1N2-q1BBj458HmmAd2[22m
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m3:22:20 PM[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/PromoPopup.tsx, /src/index.css?v=vJ-1N2-q1BBj458HmmAd2[22m

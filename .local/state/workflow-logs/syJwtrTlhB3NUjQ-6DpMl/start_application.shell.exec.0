@@ -1,0 +1,53 @@
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+[1G[0K[Gemini] API key loaded: AIzaSy…
+1:07:19 AM [express] serving on port 5000
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+
+[1m[33mwarn[39m[22m - The class `duration-[10000ms]` is ambiguous and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, replace it with `duration-&lsqb;10000ms&rsqb;` to silence this warning.
+
+[1m[33mwarn[39m[22m - The class `duration-[2000ms]` is ambiguous and matches multiple utilities.
+[1m[33mwarn[39m[22m - If this is content and not a class, replace it with `duration-&lsqb;2000ms&rsqb;` to silence this warning.
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+1:07:31 AM [express] GET /api/bookings 200 in 947ms :: []
+1:07:32 AM [express] POST /api/admin/login 401 in 1ms :: {"error":"Access denied"}
+1:07:32 AM [express] POST /api/admin/login 401 in 1ms :: {"error":"Access denied"}
+1:07:37 AM [express] GET /api/bookings 200 in 380ms :: []
+1:08:21 AM [express] POST /api/admin/login 200 in 0ms :: {"success":true}
+1:08:21 AM [express] GET /api/rooms 304 in 0ms :: [{"id":"206","name":"King Suite","type":"King Suite","price":50000},{"id":"204","name":"Queen Suite","type":"Queen Suite","price":40000},{"id":"101","name":"Deluxe Room 101","type":"Deluxe Room","price":30000},{"id":"102","name":"Deluxe Room 102","type":"Deluxe Room","price":30000},{"id":"201","name":"Deluxe Room 201","type":"Deluxe Room","price":30000},{"id":"202","name":"Deluxe Room 202","type":"Deluxe Room","price":30000},{"id":"203","name":"Deluxe Room 203","type":"Deluxe Room","price":30000},{"id":"205","name":"Deluxe Room 205","type":"Deluxe Room","price":30000},{"id":"103","name":"Standard Room","type":"Standard Room","price":23000}]
+1:08:22 AM [express] GET /api/bookings 200 in 398ms :: []
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[1;1H[0J[2m1:15:29 AM[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2mindex.html[22m
