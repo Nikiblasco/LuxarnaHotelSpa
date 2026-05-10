@@ -3,7 +3,7 @@ import Footer from "@/components/Footer";
 import ServiceCard from "@/components/ServiceCard";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Hand, Footprints, Heart, Phone } from "lucide-react";
+import { Sparkles, Hand, Footprints, Heart, Phone, Clock } from "lucide-react";
 import spaImage from "@assets/generated_images/luxury_spa_treatment_room.png";
 
 const WHATSAPP_SPA = "https://wa.me/2347049929851?text=Hello%20Luxarna%20Hotel!%20I%27d%20like%20to%20book%20a%20spa%20treatment.%20Please%20help%20me.";
@@ -58,44 +58,59 @@ export default function Spa() {
             </p>
           </div>
 
-          <Card className="overflow-hidden mb-12">
-            <div className="aspect-[21/9] overflow-hidden">
-              <img
-                src={spaImage}
-                alt="Luxarna Spa treatment room"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </Card>
+          {/* Blurred overlay container */}
+          <div className="relative rounded-xl overflow-hidden">
 
-          <div className="space-y-6">
-            {spaServices.map((service) => (
-              <ServiceCard key={service.name} {...service} />
-            ))}
-          </div>
+            {/* Blurred content */}
+            <div className="blur-sm pointer-events-none select-none">
+              <Card className="overflow-hidden mb-12">
+                <div className="aspect-[21/9] overflow-hidden">
+                  <img
+                    src={spaImage}
+                    alt="Luxarna Spa treatment room"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </Card>
 
-          <div className="mt-16 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-8 md:p-12 text-center">
-            <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-4" data-testid="text-spa-cta-title">
-              Book Your Spa Experience
-            </h2>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto" data-testid="text-spa-cta-desc">
-              Enjoy 24hrs spa services at your beck and call.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button
-                size="lg"
-                onClick={() => window.open(WHATSAPP_SPA, "_blank")}
-                data-testid="button-book-spa"
-              >
-                Book Now
-              </Button>
-              <a href="tel:+2347049929851">
-                <Button variant="outline" size="lg" className="gap-2" data-testid="button-call-spa">
-                  <Phone className="w-4 h-4" />
-                  Call to Inquire
-                </Button>
-              </a>
+              <div className="space-y-6">
+                {spaServices.map((service) => (
+                  <ServiceCard key={service.name} {...service} />
+                ))}
+              </div>
+
+              <div className="mt-16 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg p-8 md:p-12 text-center">
+                <h2 className="font-serif text-2xl md:text-3xl font-bold text-foreground mb-4">
+                  Book Your Spa Experience
+                </h2>
+                <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
+                  Enjoy 24hrs spa services at your beck and call.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <Button size="lg">Book Now</Button>
+                  <Button variant="outline" size="lg" className="gap-2">
+                    <Phone className="w-4 h-4" />
+                    Call to Inquire
+                  </Button>
+                </div>
+              </div>
             </div>
+
+            {/* Opening Soon overlay */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm z-10">
+              <div className="flex flex-col items-center gap-4 text-center px-6">
+                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Clock className="w-10 h-10 text-primary" strokeWidth={1.5} />
+                </div>
+                <h2 className="font-serif text-3xl md:text-4xl font-bold text-foreground">
+                  Opening Soon
+                </h2>
+                <p className="text-muted-foreground text-base max-w-sm">
+                  Our spa is currently being prepared to offer you the finest wellness experience. Stay tuned.
+                </p>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
