@@ -19,8 +19,10 @@ export async function registerRoutes(
   });
 
   app.get("/api/bookings", async (_req, res) => {
-    const bookings = await storage.getBookings();
-    res.json(bookings);
+  const bookings = await storage.getBookings();
+  const now = new Date();
+  const active = bookings.filter(b => new Date(b.checkOut) > now);
+  res.json(active);
   });
 
   app.delete("/api/bookings/:id", async (req, res) => {
@@ -39,11 +41,13 @@ export async function registerRoutes(
     const { roomId, checkIn, checkOut } = parsed.data;
     const existing = await storage.getBookings();
 
-    const conflict = existing.find(b =>
-      b.roomId === roomId &&
-      new Date(checkIn) < new Date(b.checkOut) &&
-      new Date(checkOut) > new Date(b.checkIn)
-    );
+    const now = new Date();
+const conflict = existing.find(b =>
+  b.roomId === roomId &&
+  new Date(b.checkOut) > now &&          // ignore expired bookings
+  new Date(checkIn) < new Date(b.checkOut) &&
+  new Date(checkOut) > new Date(b.checkIn)
+);
 
     if (conflict) {
       return res.status(409).json({ error: "Sold Out for these dates" });
