@@ -21,21 +21,48 @@ export async function registerRoutes(
   app.get("/api/bookings", async (_req, res) => {
   const bookings = await storage.getBookings();
   const now = new Date();
-  const active = bookings.filter(b => new Date(b.checkOut) > now);
+  now.setHours(0, 0, 0, 0);
+  const active = bookings.filter(b => new Date(b.checkOut) >= now);
   res.json(active);
-  });
-  
-  app.get("/api/bookings/stats", async (_req, res) => {
+});
+
+app.get("/api/bookings/stats", async (_req, res) => {
   const all = await storage.getAllBookings();
   res.json(all);
 });
 
-  app.delete("/api/bookings/:id", async (req, res) => {
-    const { id } = req.params;
-    const deleted = await storage.deleteBooking(id);
-    if (!deleted) return res.status(404).json({ error: "Booking not found" });
-    res.json({ success: true });
-  });
+app.delete("/api/bookings/:id", async (req, res) => {
+  const { id } = req.params;
+  const deleted = await storage.deleteBooking(id);
+  if (!deleted) return res.status(404).json({ error: "Booking not found" });
+  res.json({ success: true });
+});
+
+app.post("/api/bookings", async (req, res) => {
+  const parsed = insertBookingSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: parsed.error });
+  }
+
+  const { roomId, checkIn, checkOut } = parsed.data;
+  const existing = await storage.getBookings();
+
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const conflict = existing.find(b =>
+    b.roomId === roomId &&
+    new Date(b.checkOut) >= now &&
+    new Date(checkIn) < new Date(b.checkOut) &&
+    new Date(checkOut) > new Date(b.checkIn)
+  );
+
+  if (conflict) {
+    return res.status(409).json({ error: "Sold Out for these dates" });
+  }
+
+  const booking = await storage.createBooking(parsed.data);
+  res.json(booking);
+});
 
   app.post("/api/bookings", async (req, res) => {
     const parsed = insertBookingSchema.safeParse(req.body);
