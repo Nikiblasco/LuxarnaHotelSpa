@@ -24,6 +24,11 @@ export async function registerRoutes(
   const active = bookings.filter(b => new Date(b.checkOut) > now);
   res.json(active);
   });
+  
+  app.get("/api/bookings/stats", async (_req, res) => {
+  const all = await storage.getAllBookings();
+  res.json(all);
+});
 
   app.delete("/api/bookings/:id", async (req, res) => {
     const { id } = req.params;
@@ -37,6 +42,10 @@ export async function registerRoutes(
     if (!parsed.success) {
       return res.status(400).json({ error: parsed.error });
     }
+    app.get("/api/bookings/stats", async (_req, res) => {
+  const all = await storage.getAllBookings();
+  res.json(all);
+});
 
     const { roomId, checkIn, checkOut } = parsed.data;
     const existing = await storage.getBookings();

@@ -12,6 +12,149 @@ import { Room, Booking } from "@shared/schema";
 import { format } from "date-fns";
 import { Loader2 } from "lucide-react";
 
+// ── helpers ───────────────────────────────────────────────────────────────────
+
+const ROOM_PRICES: Record<string, number> = {
+  "206": 50000, "204": 40000,
+  "101": 30000, "102": 30000, "201": 30000,
+  "202": 30000, "203": 30000, "205": 30000,
+  "103": 23000,
+};
+
+function nightsBetween(checkIn: Date, checkOut: Date) {
+  return Math.max(
+    1,
+    Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86_400_000)
+  );
+}
+
+function fmt(n: number) {
+  return "₦" + n.toLocaleString("en-NG");
+}
+
+// ── Monthly stats widget (inline, no external chart lib needed) ───────────────
+
+function MonthlyStats({ allBookings, rooms }: { allBookings: Booking[]; rooms: Room[] }) {
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  // build month buckets for selected year
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const label = new Date(year, i).toLocaleString("en", { month: "short" });
+    const inMonth = allBookings.filter(b => {
+      const d = new Date(b.checkIn);
+      return d.getFullYear() === year && d.getMonth() === i;
+    });
+    const revenue = inMonth.reduce(
+      (sum, b) => sum + nightsBetween(b.checkIn, b.checkOut) * (ROOM_PRICES[b.roomId] ?? 30000),
+      0
+    );
+    return { label, count: inMonth.length, revenue };
+  });
+
+  const maxCount = Math.max(...months.map(m => m.count), 1);
+  const totalBookings = months.reduce((s, m) => s + m.count, 0);
+  const totalRevenue = months.reduce((s, m) => s + m.revenue, 0);
+
+  // most booked room type
+  const typeCounts: Record<string, number> = {};
+  allBookings
+    .filter(b => new Date(b.checkIn).getFullYear() === year)
+    .forEach(b => {
+      const room = rooms.find(r => r.id === b.roomId);
+      const type = room?.type ?? "Unknown";
+      typeCounts[type] = (typeCounts[type] ?? 0) + 1;
+    });
+  const topRoom = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
+
+  const availableYears = [
+    ...new Set(allBookings.map(b => new Date(b.checkIn).getFullYear())),
+  ].sort((a, b) => b - a);
+  if (!availableYears.includes(year) && availableYears.length > 0) {
+    availableYears.unshift(year);
+  }
+
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Monthly Booking Stats</CardTitle>
+        <select
+          className="h-9 px-3 rounded-md border bg-background text-sm"
+          value={year}
+          onChange={e => setYear(Number(e.target.value))}
+        >
+          {availableYears.map(y => (
+            <option key={y} value={y}>{y}</option>
+          ))}
+        </select>
+      </CardHeader>
+      <CardContent className="space-y-6">
+
+        {/* Summary cards */}
+        <div className="grid grid-cols-3 gap-4">
+          {[
+            { label: "Total bookings", value: totalBookings },
+            { label: "Est. revenue", value: fmt(totalRevenue) },
+            { label: "Most booked room", value: topRoom },
+          ].map(c => (
+            <div key={c.label} className="rounded-lg bg-muted p-4">
+              <p className="text-xs text-muted-foreground mb-1">{c.label}</p>
+              <p className="text-lg font-medium truncate">{c.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Bar chart */}
+        <div>
+          <p className="text-xs text-muted-foreground mb-3">Bookings per month</p>
+          <div className="flex items-end gap-1.5 h-40">
+            {months.map(m => {
+              const pct = maxCount === 0 ? 0 : (m.count / maxCount) * 100;
+              return (
+                <div key={m.label} className="flex-1 flex flex-col items-center gap-1 group">
+                  <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                    {m.count}
+                  </span>
+                  <div
+                    className="w-full rounded-t-sm bg-primary transition-all duration-300"
+                    style={{ height: `${Math.max(pct, m.count > 0 ? 4 : 0)}%` }}
+                    title={`${m.label}: ${m.count} booking${m.count !== 1 ? "s" : ""} · ${fmt(m.revenue)}`}
+                  />
+                  <span className="text-[10px] text-muted-foreground">{m.label}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Revenue table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-2">Month</th>
+                <th className="p-2 text-right">Bookings</th>
+                <th className="p-2 text-right">Est. Revenue</th>
+              </tr>
+            </thead>
+            <tbody>
+              {months.map(m => (
+                <tr key={m.label} className="border-b">
+                  <td className="p-2">{m.label} {year}</td>
+                  <td className="p-2 text-right">{m.count}</td>
+                  <td className="p-2 text-right">{m.count > 0 ? fmt(m.revenue) : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Main Admin page ───────────────────────────────────────────────────────────
+
 export default function Admin() {
   const { toast } = useToast();
   const [password, setPassword] = useState("");
@@ -23,7 +166,7 @@ export default function Admin() {
   const [checkOut,     setCheckOut]     = useState("");
   const [checkinTime,  setCheckinTime]  = useState("");
 
-  // ── Server-side login ──────────────────────────────────────────────────────
+  // ── Server-side login ─────────────────────────────────────────────────────
   const loginMutation = useMutation({
     mutationFn: async (pwd: string) => {
       const res = await apiRequest("POST", "/api/admin/login", { password: pwd });
@@ -35,8 +178,9 @@ export default function Admin() {
       toast({ title: "Access Denied", description: "Incorrect password.", variant: "destructive" }),
   });
 
-  const { data: rooms    } = useQuery<Room[]>   ({ queryKey: ["/api/rooms"],    enabled: isAuth });
-  const { data: bookings } = useQuery<Booking[]>({ queryKey: ["/api/bookings"], enabled: isAuth });
+  const { data: rooms       } = useQuery<Room[]>   ({ queryKey: ["/api/rooms"],            enabled: isAuth });
+  const { data: bookings    } = useQuery<Booking[]>({ queryKey: ["/api/bookings"],          enabled: isAuth });
+  const { data: allBookings } = useQuery<Booking[]>({ queryKey: ["/api/bookings/stats"],   enabled: isAuth });
 
   const bookingMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -45,12 +189,9 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings/stats"] });
       toast({ title: "Walk-in added successfully" });
-      setGuestName("");
-      setCheckIn("");
-      setCheckOut("");
-      setRoomId("");
-      setCheckinTime("");
+      setGuestName(""); setCheckIn(""); setCheckOut(""); setRoomId(""); setCheckinTime("");
     },
     onError: (err: any) => {
       toast({ title: "Failed to add walk-in", description: err.message, variant: "destructive" });
@@ -64,6 +205,7 @@ export default function Admin() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings/stats"] });
       toast({ title: "Booking cancelled successfully" });
     },
     onError: () => {
@@ -76,9 +218,7 @@ export default function Admin() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
         <Card className="w-full max-w-sm">
-          <CardHeader>
-            <CardTitle>Admin Access</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Admin Access</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <Input
               type="password"
@@ -94,9 +234,9 @@ export default function Admin() {
               disabled={loginMutation.isPending}
               onClick={() => loginMutation.mutate(password)}
             >
-              {loginMutation.isPending ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Checking…</>
-              ) : "Login"}
+              {loginMutation.isPending
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Checking…</>
+                : "Login"}
             </Button>
           </CardContent>
         </Card>
@@ -110,10 +250,9 @@ export default function Admin() {
       <Navigation />
       <div className="max-w-7xl mx-auto px-4 py-24 space-y-12">
 
+        {/* Add Walk-in */}
         <Card>
-          <CardHeader>
-            <CardTitle>Add Walk-in Guest</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Add Walk-in Guest</CardTitle></CardHeader>
           <CardContent className="grid md:grid-cols-2 lg:grid-cols-7 gap-4 items-end">
             <div className="space-y-2">
               <Label>Room</Label>
@@ -148,76 +287,47 @@ export default function Admin() {
             </div>
             <div className="space-y-2">
               <Label>Guest Name</Label>
-              <Input
-                data-testid="input-guest-name"
-                value={guestName}
-                onChange={e => setGuestName(e.target.value)}
-              />
+              <Input data-testid="input-guest-name" value={guestName} onChange={e => setGuestName(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Check-in Date</Label>
-              <Input
-                type="date"
-                data-testid="input-walkin-checkin"
-                value={checkIn}
-                onChange={e => setCheckIn(e.target.value)}
-              />
+              <Input type="date" data-testid="input-walkin-checkin" value={checkIn} onChange={e => setCheckIn(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Check-in Time</Label>
-              <Input
-                type="time"
-                data-testid="input-walkin-checkin-time"
-                value={checkinTime}
-                onChange={e => setCheckinTime(e.target.value)}
-              />
+              <Input type="time" data-testid="input-walkin-checkin-time" value={checkinTime} onChange={e => setCheckinTime(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Check-out Date</Label>
-              <Input
-                type="date"
-                data-testid="input-walkin-checkout"
-                value={checkOut}
-                onChange={e => setCheckOut(e.target.value)}
-              />
+              <Input type="date" data-testid="input-walkin-checkout" value={checkOut} onChange={e => setCheckOut(e.target.value)} />
             </div>
             <div className="space-y-2">
               <Label>Check-out Time</Label>
-              <Input
-                value="12:00 PM"
-                disabled
-                className="bg-muted text-muted-foreground cursor-not-allowed"
-              />
+              <Input value="12:00 PM" disabled className="bg-muted text-muted-foreground cursor-not-allowed" />
             </div>
             <Button
               data-testid="button-add-booking"
               onClick={() => bookingMutation.mutate({
-                roomId,
-                guestName,
-                checkIn,
-                checkOut,
+                roomId, guestName, checkIn, checkOut,
                 checkinTime: checkinTime
                   ? new Date(`1970-01-01T${checkinTime}`).toLocaleTimeString("en-US", {
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
+                      hour: "numeric", minute: "2-digit", hour12: true,
                     })
                   : undefined,
                 checkoutTime: "12:00 PM",
               })}
               disabled={bookingMutation.isPending || !roomId || !guestName || !checkIn || !checkOut}
             >
-              {bookingMutation.isPending ? (
-                <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Adding…</>
-              ) : "Add Booking"}
+              {bookingMutation.isPending
+                ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Adding…</>
+                : "Add Booking"}
             </Button>
           </CardContent>
         </Card>
 
+        {/* Active Bookings */}
         <Card>
-          <CardHeader>
-            <CardTitle>Active Bookings</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Active Bookings</CardTitle></CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
@@ -235,9 +345,7 @@ export default function Admin() {
                 <tbody>
                   {bookings && bookings.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="p-6 text-center text-muted-foreground">
-                        No bookings yet
-                      </td>
+                      <td colSpan={7} className="p-6 text-center text-muted-foreground">No active bookings</td>
                     </tr>
                   )}
                   {bookings?.map(b => (
@@ -266,6 +374,11 @@ export default function Admin() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Monthly Stats */}
+        {allBookings && rooms && (
+          <MonthlyStats allBookings={allBookings} rooms={rooms} />
+        )}
 
       </div>
       <Footer />

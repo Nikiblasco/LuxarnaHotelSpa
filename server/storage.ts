@@ -42,6 +42,7 @@ export interface IStorage {
 
   getRooms(): Promise<Room[]>;
   getBookings(): Promise<Booking[]>;
+  getAllBookings(): Promise<Booking[]>;
   createBooking(booking: InsertBooking): Promise<Booking>;
   deleteBooking(id: string): Promise<boolean>;
 }
@@ -80,11 +81,35 @@ export class SupabaseStorage implements IStorage {
     }
 
     return (data ?? []).map(row => ({
-      id:        row.id,
-      roomId:    row.room_id,
-      guestName: row.guest_name,
-      checkIn:   new Date(row.check_in),
-      checkOut:  new Date(row.check_out),
+      id:           row.id,
+      roomId:       row.room_id,
+      guestName:    row.guest_name,
+      checkIn:      new Date(row.check_in),
+      checkOut:     new Date(row.check_out),
+      checkinTime:  row.checkin_time  ?? null,
+      checkoutTime: row.checkout_time ?? "12:00 PM",
+    }));
+  }
+
+  async getAllBookings(): Promise<Booking[]> {
+    const { data, error } = await getSupabase()
+      .from("bookings")
+      .select("*")
+      .order("check_in", { ascending: true });
+
+    if (error) {
+      console.error("[Storage] getAllBookings error:", error.message);
+      throw new Error(error.message);
+    }
+
+    return (data ?? []).map(row => ({
+      id:           row.id,
+      roomId:       row.room_id,
+      guestName:    row.guest_name,
+      checkIn:      new Date(row.check_in),
+      checkOut:     new Date(row.check_out),
+      checkinTime:  row.checkin_time  ?? null,
+      checkoutTime: row.checkout_time ?? "12:00 PM",
     }));
   }
 
@@ -96,11 +121,13 @@ export class SupabaseStorage implements IStorage {
       .from("bookings")
       .insert({
         id,
-        room_id:    booking.roomId,
-        room_name:  room?.name ?? booking.roomId,
-        guest_name: booking.guestName,
-        check_in:   new Date(booking.checkIn).toISOString(),
-        check_out:  new Date(booking.checkOut).toISOString(),
+        room_id:       booking.roomId,
+        room_name:     room?.name ?? booking.roomId,
+        guest_name:    booking.guestName,
+        check_in:      new Date(booking.checkIn).toISOString(),
+        check_out:     new Date(booking.checkOut).toISOString(),
+        checkin_time:  booking.checkinTime  ?? null,
+        checkout_time: booking.checkoutTime ?? "12:00 PM",
       })
       .select()
       .single();
@@ -111,11 +138,13 @@ export class SupabaseStorage implements IStorage {
     }
 
     return {
-      id:        data.id,
-      roomId:    data.room_id,
-      guestName: data.guest_name,
-      checkIn:   new Date(data.check_in),
-      checkOut:  new Date(data.check_out),
+      id:           data.id,
+      roomId:       data.room_id,
+      guestName:    data.guest_name,
+      checkIn:      new Date(data.check_in),
+      checkOut:     new Date(data.check_out),
+      checkinTime:  data.checkin_time  ?? null,
+      checkoutTime: data.checkout_time ?? "12:00 PM",
     };
   }
 
