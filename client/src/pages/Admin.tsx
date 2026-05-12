@@ -102,29 +102,27 @@ function MonthlyStats({ allBookings, rooms }: { allBookings: Booking[]; rooms: R
             </div>
           ))}
         </div>
-
-        {/* Bar chart */}
-        <div>
-          <p className="text-xs text-muted-foreground mb-3">Bookings per month</p>
-          <div className="flex items-end gap-1.5 h-40">
-            {months.map(m => {
-              const pct = maxCount === 0 ? 0 : (m.count / maxCount) * 100;
-              return (
-                <div key={m.label} className="flex-1 flex flex-col items-center gap-1 group">
-                  <span className="text-[10px] text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
-                    {m.count}
-                  </span>
-                  <div
-                    className="w-full rounded-t-sm bg-primary transition-all duration-300"
-                    style={{ height: `${Math.max(pct, m.count > 0 ? 4 : 0)}%` }}
-                    title={`${m.label}: ${m.count} booking${m.count !== 1 ? "s" : ""} · ${fmt(m.revenue)}`}
-                  />
-                  <span className="text-[10px] text-muted-foreground">{m.label}</span>
-                </div>
-              );
-            })}
+{/* Bar chart */}
+<div>
+  <p className="text-xs text-muted-foreground mb-3">Bookings per month</p>
+  <div className="flex items-end gap-1.5" style={{ height: "160px" }}>
+    {months.map(m => {
+      const pct = maxCount === 0 ? 0 : (m.count / maxCount) * 100;
+      return (
+        <div key={m.label} className="flex-1 flex flex-col items-center gap-1 group" style={{ height: "100%" }}>
+          <div style={{ flex: 1, display: "flex", alignItems: "flex-end", width: "100%" }}>
+            <div
+              className="w-full rounded-t-sm bg-primary transition-all duration-300"
+              style={{ height: `${Math.max(pct, m.count > 0 ? 8 : 0)}%` }}
+              title={`${m.label}: ${m.count} booking${m.count !== 1 ? "s" : ""} · ${fmt(m.revenue)}`}
+            />
           </div>
+          <span className="text-[10px] text-muted-foreground">{m.label}</span>
         </div>
+      );
+    })}
+  </div>
+</div>
 
         {/* Revenue table */}
         <div className="overflow-x-auto">
