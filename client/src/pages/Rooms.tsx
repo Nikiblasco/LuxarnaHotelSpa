@@ -19,7 +19,7 @@ import { Room, Booking } from "@shared/schema";
 import KingSuiteImage from "@assets/niiggg.png";
 import QueenSuiteImage from "@assets/holyyyyy.png";
 import deluxeRoomImage from "@assets/nicholas.jpg";
-import standardRoomImage from "@assets/generated_images/standard_hotel_room_interior.png";
+import standardRoomImage from "@assets/OMOSEEYAHOONA.png";
 
 const WHATSAPP_NUMBER = "2347049929851";
 

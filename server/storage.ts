@@ -80,7 +80,7 @@ export class SupabaseStorage implements IStorage {
       throw new Error(error.message);
     }
 
-    return (data ?? []).map(row => ({
+    return ((data ?? []) as any[]).map(row => ({
       id:           row.id,
       roomId:       row.room_id,
       guestName:    row.guest_name,
@@ -102,7 +102,7 @@ export class SupabaseStorage implements IStorage {
       throw new Error(error.message);
     }
 
-    return (data ?? []).map(row => ({
+   return ((data ?? []) as any[]).map(row => ({
       id:           row.id,
       roomId:       row.room_id,
       guestName:    row.guest_name,
@@ -117,21 +117,21 @@ export class SupabaseStorage implements IStorage {
     const id   = randomUUID();
     const room = ROOMS.find(r => r.id === booking.roomId);
 
-    const { data, error } = await getSupabase()
-      .from("bookings")
-      .insert({
-        id,
-        room_id:       booking.roomId,
-        room_name:     room?.name ?? booking.roomId,
-        guest_name:    booking.guestName,
-        check_in:      new Date(booking.checkIn).toISOString(),
-        check_out:     new Date(booking.checkOut).toISOString(),
-        checkin_time:  booking.checkinTime  ?? null,
-        checkout_time: booking.checkoutTime ?? "12:00 PM",
-      })
-      .select()
-      .single();
-
+    const { data, error } = await (getSupabase() as any)
+  .from("bookings")
+  .insert({
+    id,
+    room_id:       booking.roomId,
+    room_name:     room?.name ?? booking.roomId,
+    guest_name:    booking.guestName,
+    check_in:      new Date(booking.checkIn).toISOString(),
+    check_out:     new Date(booking.checkOut).toISOString(),
+    checkin_time:  booking.checkinTime  ?? null,
+    checkout_time: booking.checkoutTime ?? "12:00 PM",
+  })
+  .select()
+  .single();
+      
     if (error) {
       console.error("[Storage] createBooking error:", error.message);
       throw new Error(error.message);
