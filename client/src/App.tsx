@@ -14,6 +14,7 @@ import NotFound from "@/pages/not-found";
 import LoyaltySignUp from "@/pages/LoyaltySignUp";
 import ChatBot from "@/components/ChatBot";
 import PromoPopup from "@/components/PromoPopup";
+import Checkout from "@/pages/Checkout";
 
 function Router() {
   return (
@@ -26,6 +27,7 @@ function Router() {
       <Route path="/contact" component={Contact} />
       <Route path="/admin" component={Admin} />
       <Route path="/loyalty-signup" component={LoyaltySignUp} />
+      <Route path="/checkout" component={Checkout} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -318,6 +318,71 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
     return res.json({ success: true });
   });
   // ─────────────────────────────────────────────────────────────────────────
+// ── Paystack payment verification ────────────────────────────────────────
+app.post("/api/verify-payment", async (req, res) => {
+  const { reference, guestName, roomId, checkIn, checkOut } = req.body as {
+    reference: string;
+    guestName: string;
+    roomId: string;
+    checkIn: string;
+    checkOut: string;
+  };
 
+  if (!reference || !roomId || !guestName || !checkIn || !checkOut) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    // 1. Verify with Paystack
+    const paystackRes = await fetch(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+        },
+      }
+    );
+    const paystackData = await paystackRes.json() as {
+      status: boolean;
+      data: { status: string };
+    };
+
+    if (!paystackData.status || paystackData.data.status !== "success") {
+      return res.status(402).json({ error: "Payment not confirmed by Paystack" });
+    }
+
+    // 2. Save booking to DB
+    const parsed = insertBookingSchema.safeParse({
+      roomId,
+      guestName,
+      checkIn: new Date(checkIn),
+      checkOut: new Date(checkOut),
+    });
+
+    if (!parsed.success) {
+      return res.status(400).json({ error: parsed.error });
+    }
+
+    // Check for conflicts first
+    const existing = await storage.getBookings();
+    const conflict = existing.find(
+      (b) =>
+        b.roomId === roomId &&
+        new Date(checkIn) < new Date(b.checkOut) &&
+        new Date(checkOut) > new Date(b.checkIn)
+    );
+
+    if (conflict) {
+      return res.status(409).json({ error: "Room was just booked by someone else" });
+    }
+
+    const booking = await storage.createBooking(parsed.data);
+    return res.json({ success: true, booking });
+  } catch (err: any) {
+    console.error("[Paystack] Verify error:", err.message);
+    return res.status(500).json({ error: "Payment verification failed" });
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────
   return httpServer;
 }

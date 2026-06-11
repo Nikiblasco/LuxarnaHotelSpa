@@ -6,6 +6,7 @@ import GallerySection from "@/components/GallerySection";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Star, Shield, Heart, Award } from "lucide-react";
+import { Helmet } from "react-helmet-async";
 
 const features = [
   {
@@ -31,7 +32,42 @@ const features = [
 ];
 
 export default function Home() {
-  return (
+  return ( 
+    <>
+  <Helmet>
+    <title>
+      Luxarna Hotel & Spa | Affordable Hotel in Port Harcourt Nigeria
+    </title>
+
+    <meta
+      name="description"
+      content="Luxarna Hotel & Spa offers affordable accommodation, comfortable suites, spa treatments, fine dining, and exceptional hospitality in Port Harcourt Nigeria."
+    /> 
+
+    <p className="mt-4 text-muted-foreground max-w-3xl mx-auto">
+  Luxarna Hotel & Spa is an affordable hotel in Port Harcourt Nigeria offering
+  affordable accommodation, comfortable suites, spa treatments, fine dining,
+  and excellent hospitality for business and leisure travelers.
+</p>
+
+    <meta
+      name="keywords"
+      content="affordable hotel Port Harcourt, hotel in Port Harcourt Nigeria, spa hotel Port Harcourt, best hotel in Port Harcourt, affordable accommodation Nigeria"
+    />
+
+    <meta
+      property="og:title"
+      content="Luxarna Hotel & Spa | Affordable Hotel in Port Harcourt"
+    />
+
+    <meta
+      property="og:description"
+      content="Experience affordable accommodation, spa treatments, fine dining, and excellent hospitality at Luxarna Hotel & Spa in Port Harcourt Nigeria."
+    />
+
+    <meta name="robots" content="index, follow" />
+  </Helmet>
+  
     <div className="min-h-screen bg-background">
       <Navigation />
       <HeroSection />
@@ -91,5 +127,6 @@ export default function Home() {
 
       <Footer />
     </div>
+     </>
   );
 }

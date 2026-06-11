@@ -4,8 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, UtensilsCrossed, Music, Wine } from "lucide-react";
 import restaurantImage from "@assets/LUXARNA_RESTAURANT_1774999476903.png";
-
-const WHATSAPP_RESTAURANT = "https://wa.me/2347049929851?text=Hello%20Luxarna%20Hotel!%20I%27d%20like%20to%20book%20a%20table%20at%20your%20restaurant.%20Please%20help%20me.";
+import { Helmet } from "react-helmet-async";
 
 const mealTimes = [
   { name: "Breakfast", time: "7:00 AM – 11:30 AM" },
@@ -15,6 +14,18 @@ const mealTimes = [
 
 export default function Restaurant() {
   return (
+    <>
+    <Helmet>
+  <title>
+    Fine Dining Restaurant in Port Harcourt | Luxarna Hotel & Spa
+  </title>
+
+  <meta
+    name="description"
+    content="Enjoy fine dining, local delicacies, and international cuisine at Luxarna Hotel & Spa restaurant in Port Harcourt."
+  />
+</Helmet>
+
     <div className="min-h-screen bg-background">
       <Navigation />
 
@@ -37,7 +48,7 @@ export default function Restaurant() {
               Taste our local dishes and channel your inner superstar.
             </p>
             <button
-              onClick={() => window.open(WHATSAPP_RESTAURANT, "_blank")}
+             onClick={() => alert("Table booking coming soon! Call us directly to reserve.")}
               data-testid="button-book-table"
               className="
                 bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#B8860B]
@@ -151,5 +162,6 @@ export default function Restaurant() {
 
       <Footer />
     </div>
+    </>
   );
 }

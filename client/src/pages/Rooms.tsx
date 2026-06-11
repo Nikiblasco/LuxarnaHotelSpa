@@ -6,6 +6,8 @@ import RoomCard from "@/components/RoomCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useLocation } from "wouter";
+import { Helmet } from "react-helmet-async";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +22,18 @@ import KingSuiteImage from "@assets/niiggg.png";
 import QueenSuiteImage from "@assets/holyyyyy.png";
 import deluxeRoomImage from "@assets/nicholas.jpg";
 import standardRoomImage from "@assets/OMOSEEYAHOONA.png";
+import { navigate } from "wouter/use-browser-location";  
 
-const WHATSAPP_NUMBER = "2347049929851";
+<Helmet>
+  <title>
+    Affordable Rooms & Suites in Port Harcourt | Luxarna Hotel & Spa
+  </title>
+
+  <meta
+    name="description"
+    content="Explore affordable rooms and premium suites at Luxarna Hotel & Spa in Port Harcourt Nigeria."
+  />
+</Helmet>
 
 const TYPE_IMAGES: Record<string, string> = {
   "King Suite": KingSuiteImage,
@@ -142,39 +154,27 @@ export default function Rooms() {
   };
 
   const handleBookNow = (
-    type: string,
-    pricePerNight: number,
-    avail: ReturnType<typeof getTypeAvailability>,
-  ) => {
-    // Guard: dates not filled → show polite popup
-    if (!datesReady()) {
-      setShowDialog(true);
-      return;
-    }
+  type: string,
+  pricePerNight: number,
+  avail: ReturnType<typeof getTypeAvailability>,
+) => {
+  if (!datesReady()) {
+    setShowDialog(true);
+    return;
+  }
 
-    // Guard: room fully booked for these dates (shouldn't reach here if button is disabled, but safety net)
-    if (avail.status === "occupied") return;
+  if (avail.status === "occupied") return;
 
-    const nights = getNights();
-    let text = `Hello Luxarna Hotel! I'd like to book the ${type}.`;
-    if (name.trim()) text += ` My name is ${name.trim()}.`;
-
-    const fmtDate = (d: string) =>
-      new Date(d).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      });
-    const total = formatPrice(pricePerNight * nights);
-    text += ` Check-in: ${fmtDate(checkIn)}, Check-out: ${fmtDate(checkOut)} (${nights} night${nights > 1 ? "s" : ""}). Total: ${total}.`;
-    text += " Please confirm availability and payment details. Thank you!";
-
-    window.open(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`,
-      "_blank",
-    );
-  };
-
+  const room = avail.availableRooms[0];
+  const params = new URLSearchParams({
+    roomId: room.id,
+    checkIn,
+    checkOut,
+    name,
+  });
+  navigate(`/checkout?${params.toString()}`);
+};
+  
   const roomsByType = rooms
     ? TYPE_ORDER.map((type) => ({
         type,
