@@ -14,19 +14,17 @@ const mealTimes = [
 
 export default function Restaurant() {
   return (
-    <>
-    <Helmet>
-  <title>
-    Fine Dining Restaurant in Port Harcourt | Luxarna Hotel & Spa
-  </title>
-
-  <meta
-    name="description"
-    content="Enjoy fine dining, local delicacies, and international cuisine at Luxarna Hotel & Spa restaurant in Port Harcourt."
-  />
-</Helmet>
-
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>
+          Fine Dining Restaurant in Port Harcourt | Luxarna Hotel & Spa
+        </title>
+        <meta
+          name="description"
+          content="Enjoy fine dining, local delicacies, and international cuisine at Luxarna Hotel & Spa restaurant in Port Harcourt."
+        />
+      </Helmet>
+
       <Navigation />
 
       <section className="pt-24 md:pt-32 pb-16 md:pb-24">
@@ -48,7 +46,7 @@ export default function Restaurant() {
               Taste our local dishes and channel your inner superstar.
             </p>
             <button
-             onClick={() => alert("Table booking coming soon! Call us directly to reserve.")}
+              onClick={() => alert("Table booking coming soon! Call us directly to reserve.")}
               data-testid="button-book-table"
               className="
                 bg-gradient-to-br from-[#D4AF37] via-[#FFD700] to-[#B8860B]
@@ -162,6 +160,5 @@ export default function Restaurant() {
 
       <Footer />
     </div>
-    </>
   );
 }

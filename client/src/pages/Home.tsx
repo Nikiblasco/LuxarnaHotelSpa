@@ -33,42 +33,35 @@ const features = [
 
 export default function Home() {
   return ( 
-    <>
-  <Helmet>
-    <title>
-      Luxarna Hotel & Spa | Affordable Hotel in Port Harcourt Nigeria
-    </title>
-
-    <meta
-      name="description"
-      content="Luxarna Hotel & Spa offers affordable accommodation, comfortable suites, spa treatments, fine dining, and exceptional hospitality in Port Harcourt Nigeria."
-    /> 
-
-    <p className="mt-4 text-muted-foreground max-w-3xl mx-auto">
-  Luxarna Hotel & Spa is an affordable hotel in Port Harcourt Nigeria offering
-  affordable accommodation, comfortable suites, spa treatments, fine dining,
-  and excellent hospitality for business and leisure travelers.
-</p>
-
-    <meta
-      name="keywords"
-      content="affordable hotel Port Harcourt, hotel in Port Harcourt Nigeria, spa hotel Port Harcourt, best hotel in Port Harcourt, affordable accommodation Nigeria"
-    />
-
-    <meta
-      property="og:title"
-      content="Luxarna Hotel & Spa | Affordable Hotel in Port Harcourt"
-    />
-
-    <meta
-      property="og:description"
-      content="Experience affordable accommodation, spa treatments, fine dining, and excellent hospitality at Luxarna Hotel & Spa in Port Harcourt Nigeria."
-    />
-
-    <meta name="robots" content="index, follow" />
-  </Helmet>
-  
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>
+          Luxarna Hotel & Spa | Affordable Hotel in Port Harcourt Nigeria
+        </title>
+
+        <meta
+          name="description"
+          content="Luxarna Hotel & Spa offers affordable accommodation, comfortable suites, spa treatments, fine dining, and exceptional hospitality in Port Harcourt Nigeria."
+        /> 
+
+        <meta
+          name="keywords"
+          content="affordable hotel Port Harcourt, hotel in Port Harcourt Nigeria, spa hotel Port Harcourt, best hotel in Port Harcourt, affordable accommodation Nigeria"
+        />
+
+        <meta
+          property="og:title"
+          content="Luxarna Hotel & Spa | Affordable Hotel in Port Harcourt"
+        />
+
+        <meta
+          property="og:description"
+          content="Experience affordable accommodation, spa treatments, fine dining, and excellent hospitality at Luxarna Hotel & Spa in Port Harcourt Nigeria."
+        />
+
+        <meta name="robots" content="index, follow" />
+      </Helmet>
+  
       <Navigation />
       <HeroSection />
       <SectionPreview />
@@ -80,9 +73,15 @@ export default function Home() {
             <p className="text-primary font-medium tracking-widest uppercase text-sm mb-3" data-testid="text-why-subtitle">
               Why Choose Us
             </p>
-            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground" data-testid="text-why-title">
+            <h2 className="font-serif text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4" data-testid="text-why-title">
               The Luxarna Experience
             </h2>
+            {/* 💡 The paragraph tag is now safely rendered here out of the Helmet! */}
+            <p className="mt-4 text-muted-foreground max-w-3xl mx-auto text-base">
+              Luxarna Hotel & Spa is an affordable hotel in Port Harcourt Nigeria offering
+              affordable accommodation, comfortable suites, spa treatments, fine dining,
+              and excellent hospitality for business and leisure travelers.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
@@ -109,7 +108,6 @@ export default function Home() {
 
       <section className="py-16 md:py-24 bg-secondary text-secondary-foreground">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/rooms">
               <Button size="lg" className="min-w-[180px]" data-testid="button-cta-book">
@@ -127,6 +125,5 @@ export default function Home() {
 
       <Footer />
     </div>
-     </>
   );
 }
