@@ -24,17 +24,6 @@ import deluxeRoomImage from "@assets/nicholas.jpg";
 import standardRoomImage from "@assets/OMOSEEYAHOONA.png";
 import { navigate } from "wouter/use-browser-location";  
 
-<Helmet>
-  <title>
-    Affordable Rooms & Suites in Port Harcourt | Luxarna Hotel & Spa
-  </title>
-
-  <meta
-    name="description"
-    content="Explore affordable rooms and premium suites at Luxarna Hotel & Spa in Port Harcourt Nigeria."
-  />
-</Helmet>
-
 const TYPE_IMAGES: Record<string, string> = {
   "King Suite": KingSuiteImage,
   "Queen Suite": QueenSuiteImage,
@@ -154,26 +143,26 @@ export default function Rooms() {
   };
 
   const handleBookNow = (
-  type: string,
-  pricePerNight: number,
-  avail: ReturnType<typeof getTypeAvailability>,
-) => {
-  if (!datesReady()) {
-    setShowDialog(true);
-    return;
-  }
+    type: string,
+    pricePerNight: number,
+    avail: ReturnType<typeof getTypeAvailability>,
+  ) => {
+    if (!datesReady()) {
+      setShowDialog(true);
+      return;
+    }
 
-  if (avail.status === "occupied") return;
+    if (avail.status === "occupied") return;
 
-  const room = avail.availableRooms[0];
-  const params = new URLSearchParams({
-    roomId: room.id,
-    checkIn,
-    checkOut,
-    name,
-  });
-  navigate(`/checkout?${params.toString()}`);
-};
+    const room = avail.availableRooms[0];
+    const params = new URLSearchParams({
+      roomId: room.id,
+      checkIn,
+      checkOut,
+      name,
+    });
+    navigate(`/checkout?${params.toString()}`);
+  };
   
   const roomsByType = rooms
     ? TYPE_ORDER.map((type) => ({
@@ -187,6 +176,16 @@ export default function Rooms() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>
+          Affordable Rooms & Suites in Port Harcourt | Luxarna Hotel & Spa
+        </title>
+        <meta
+          name="description"
+          content="Explore affordable rooms and premium suites at Luxarna Hotel & Spa in Port Harcourt Nigeria."
+        />
+      </Helmet>
+
       <Navigation />
 
       {/* ── "Please choose dates" popup ── */}
