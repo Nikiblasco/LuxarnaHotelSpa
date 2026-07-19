@@ -157,7 +157,7 @@ export default function Admin() {
   const { toast } = useToast();
   const [password, setPassword] = useState("");
   const [isAuth,   setIsAuth]   = useState(false);
-
+  const [isPastBooking, setIsPastBooking] = useState(false);
   const [roomId,       setRoomId]       = useState("");
   const [guestName,    setGuestName]    = useState("");
   const [checkIn,      setCheckIn]      = useState("");
@@ -188,7 +188,11 @@ export default function Admin() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
       queryClient.invalidateQueries({ queryKey: ["/api/bookings/stats"] });
-      toast({ title: "Walk-in added successfully" });
+     toast({
+  title: isPastBooking
+    ? "Past booking added successfully"
+    : "Walk-in added successfully",
+  });
       setGuestName(""); setCheckIn(""); setCheckOut(""); setRoomId(""); setCheckinTime("");
     },
     onError: (err: any) => {
@@ -247,10 +251,17 @@ export default function Admin() {
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="max-w-7xl mx-auto px-4 py-24 space-y-12">
-
+        <div className="flex items-center gap-2 mb-4">
+  <input
+    type="checkbox"
+    checked={isPastBooking}
+    onChange={(e) => setIsPastBooking(e.target.checked)}
+  />
+  <Label>Add as Past Booking</Label>
+</div>
         {/* Add Walk-in */}
         <Card>
-          <CardHeader><CardTitle>Add Walk-in Guest</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Add Booking (Walk-in / Past Booking)</CardTitle></CardHeader>
           <CardContent className="grid md:grid-cols-2 lg:grid-cols-7 gap-4 items-end">
             <div className="space-y-2">
               <Label>Room</Label>
@@ -318,7 +329,7 @@ export default function Admin() {
             >
               {bookingMutation.isPending
                 ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Adding…</>
-                : "Add Booking"}
+                :isPastBooking ? "Add Past Booking" : "Add Walk-in"}
             </Button>
           </CardContent>
         </Card>

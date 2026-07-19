@@ -64,35 +64,6 @@ app.post("/api/bookings", async (req, res) => {
   res.json(booking);
 });
 
-  app.post("/api/bookings", async (req, res) => {
-    const parsed = insertBookingSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).json({ error: parsed.error });
-    }
-    app.get("/api/bookings/stats", async (_req, res) => {
-  const all = await storage.getAllBookings();
-  res.json(all);
-});
-
-    const { roomId, checkIn, checkOut } = parsed.data;
-    const existing = await storage.getBookings();
-
-    const now = new Date();
-const conflict = existing.find(b =>
-  b.roomId === roomId &&
-  new Date(b.checkOut) > now &&          // ignore expired bookings
-  new Date(checkIn) < new Date(b.checkOut) &&
-  new Date(checkOut) > new Date(b.checkIn)
-);
-
-    if (conflict) {
-      return res.status(409).json({ error: "Sold Out for these dates" });
-    }
-
-    const booking = await storage.createBooking(parsed.data);
-    res.json(booking);
-  });
-
   // ── AI Chatbot (Google Gemini) ────────────────────────────────────────────
   const apiKey = process.env.GOOGLE_API_KEY ?? "";
   console.log(`[Gemini] API key loaded: ${apiKey ? `${apiKey.slice(0, 6)}…` : "NOT SET — check Secrets"}`);
@@ -190,7 +161,7 @@ CRITICAL RULES — FOLLOW THESE EXACTLY:
       bookingContext += "- Never reveal guest names — only booking dates.\n";
 
       const model = genAI.getGenerativeModel({
-        model: "gemini-2.5-flash",
+        model: "gemini-1.5-flash", // Corrected model name (2.5 does not exist)
         systemInstruction: SYSTEM_PROMPT + bookingContext,
       });
 
