@@ -36,6 +36,7 @@ function fmt(n: number) {
 
 function MonthlyStats({ allBookings, rooms }: { allBookings: Booking[]; rooms: Room[] }) {
   const [year, setYear] = useState(new Date().getFullYear());
+  console.log("ALL BOOKINGS:", allBookings);
 
   // build month buckets for selected year
   const months = Array.from({ length: 12 }, (_, i) => {
