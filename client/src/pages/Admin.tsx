@@ -39,6 +39,12 @@ function MonthlyStats({ allBookings, rooms }: { allBookings: Booking[]; rooms: R
   console.log("ALL BOOKINGS:", allBookings);
 
   // build month buckets for selected year
+  const jan = allBookings.filter(b => {
+  const d = new Date(b.checkIn);
+  return d.getFullYear() === 2026 && d.getMonth() === 0;
+});
+
+console.log("JAN BOOKINGS:", jan.length, jan);
   const months = Array.from({ length: 12 }, (_, i) => {
     const label = new Date(year, i).toLocaleString("en", { month: "short" });
     const inMonth = allBookings.filter(b => {
