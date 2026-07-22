@@ -14,12 +14,40 @@ import { Loader2 } from "lucide-react";
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
-const ROOM_PRICES: Record<string, number> = {
-  "206": 50000, "204": 40000,
-  "101": 30000, "102": 30000, "201": 30000,
-  "202": 30000, "203": 30000, "205": 30000,
+const OLD_ROOM_PRICES: Record<string, number> = {
+  "206": 45000,
+  "204": 35000,
+  "101": 25000,
+  "102": 25000,
+  "201": 25000,
+  "202": 25000,
+  "203": 25000,
+  "205": 25000,
+  "103": 18000,
+};
+
+const CURRENT_ROOM_PRICES: Record<string, number> = {
+  "206": 50000,
+  "204": 40000,
+  "101": 30000,
+  "102": 30000,
+  "201": 30000,
+  "202": 30000,
+  "203": 30000,
+  "205": 30000,
   "103": 23000,
 };
+
+const PRICE_INCREASE_DATE = "2026-04-01";
+
+function getNightlyRate(roomId: string, checkIn: string) {
+  const prices =
+    checkIn && checkIn < PRICE_INCREASE_DATE
+      ? OLD_ROOM_PRICES
+      : CURRENT_ROOM_PRICES;
+
+  return prices[roomId] ?? 30000;
+}
 
 function nightsBetween(checkIn: Date, checkOut: Date) {
   return Math.max(
@@ -51,7 +79,7 @@ function MonthlyStats({ allBookings, rooms }: { allBookings: Booking[]; rooms: R
     });
 
     const revenue = inMonth.reduce(
-      (sum, b) => sum + nightsBetween(b.checkIn, b.checkOut) * (ROOM_PRICES[b.roomId] ?? 30000),
+      (sum, b) => sum + nightsBetween(b.checkIn, b.checkOut) * b.nightlyRate,
       0
     );
 
@@ -326,7 +354,11 @@ export default function Admin() {
             <Button
               data-testid="button-add-booking"
               onClick={() => bookingMutation.mutate({
-                roomId, guestName, checkIn, checkOut,
+                roomId,
+                guestName,
+                checkIn,
+                checkOut,
+                nightlyRate: getNightlyRate(roomId, checkIn),
                 checkinTime: checkinTime
                   ? new Date(`1970-01-01T${checkinTime}`).toLocaleTimeString("en-US", {
                       hour: "numeric", minute: "2-digit", hour12: true,

@@ -23,6 +23,7 @@ export const bookings = pgTable("bookings", {
   checkOut: timestamp("check_out").notNull(),
   checkinTime: text("checkin_time"),
   checkoutTime: text("checkout_time").default("12:00 PM"),
+  nightlyRate: integer("nightly_rate").notNull(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -35,6 +36,7 @@ export const insertBookingSchema = createInsertSchema(bookings).omit({ id: true 
   checkOut: z.coerce.date(),
   checkinTime: z.string().optional(),
   checkoutTime: z.string().default("12:00 PM"),
+  nightlyRate: z.number().int().nonnegative(),
 });
 
 export type InsertUser    = z.infer<typeof insertUserSchema>;
