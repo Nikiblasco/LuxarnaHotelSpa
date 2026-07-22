@@ -36,25 +36,25 @@ function fmt(n: number) {
 
 function MonthlyStats({ allBookings, rooms }: { allBookings: Booking[]; rooms: Room[] }) {
   const [year, setYear] = useState(new Date().getFullYear());
-  console.log("ALL BOOKINGS:", allBookings);
 
-  // build month buckets for selected year
-  const jan = allBookings.filter(b => {
-  const d = new Date(b.checkIn);
-  return d.getFullYear() === 2026 && d.getMonth() === 0;
-});
-
-console.log("JAN BOOKINGS:", jan.length, jan);
+  // Build month buckets using UTC so midnight UTC dates do not shift
+  // into the previous day/month in the browser's local timezone.
   const months = Array.from({ length: 12 }, (_, i) => {
-    const label = new Date(year, i).toLocaleString("en", { month: "short" });
+    const label = new Date(Date.UTC(year, i, 1)).toLocaleString("en", {
+      month: "short",
+      timeZone: "UTC",
+    });
+
     const inMonth = allBookings.filter(b => {
       const d = new Date(b.checkIn);
-      return d.getFullYear() === year && d.getMonth() === i;
+      return d.getUTCFullYear() === year && d.getUTCMonth() === i;
     });
+
     const revenue = inMonth.reduce(
       (sum, b) => sum + nightsBetween(b.checkIn, b.checkOut) * (ROOM_PRICES[b.roomId] ?? 30000),
       0
     );
+
     return { label, count: inMonth.length, revenue };
   });
 
@@ -62,20 +62,22 @@ console.log("JAN BOOKINGS:", jan.length, jan);
   const totalBookings = months.reduce((s, m) => s + m.count, 0);
   const totalRevenue = months.reduce((s, m) => s + m.revenue, 0);
 
-  // most booked room type
+  // Most booked room type for the selected year.
   const typeCounts: Record<string, number> = {};
   allBookings
-    .filter(b => new Date(b.checkIn).getFullYear() === year)
+    .filter(b => new Date(b.checkIn).getUTCFullYear() === year)
     .forEach(b => {
       const room = rooms.find(r => r.id === b.roomId);
       const type = room?.type ?? "Unknown";
       typeCounts[type] = (typeCounts[type] ?? 0) + 1;
     });
+
   const topRoom = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
 
   const availableYears = [
-    ...new Set(allBookings.map(b => new Date(b.checkIn).getFullYear())),
+    ...new Set(allBookings.map(b => new Date(b.checkIn).getUTCFullYear())),
   ].sort((a, b) => b - a);
+
   if (!availableYears.includes(year) && availableYears.length > 0) {
     availableYears.unshift(year);
   }
