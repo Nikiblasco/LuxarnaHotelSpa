@@ -468,6 +468,46 @@ async function handleExcelFile(
     },
   });
 
+  const importMutation = useMutation({
+    mutationFn: async (bookings: ImportedBooking[]) => {
+      const res = await apiRequest(
+        "POST",
+        "/api/bookings/import",
+        bookings
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null);
+        throw new Error(errorData?.error ?? "Failed to import bookings");
+      }
+
+      return res.json();
+    },
+
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/bookings/stats"] });
+
+      setImportedBookings([]);
+      setImportFileName("");
+
+      toast({
+        title: "Historical bookings imported successfully",
+        description: data?.imported
+          ? `${data.imported} bookings were added.`
+          : undefined,
+      });
+    },
+
+    onError: (err: any) => {
+      toast({
+        title: "Import failed",
+        description: err.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   const cancelMutation = useMutation({
     mutationFn: async (id: string) => {
       const res = await apiRequest("DELETE", `/api/bookings/${id}`);
@@ -667,8 +707,7 @@ async function handleExcelFile(
             <p className="text-xl font-semibold">
               {fmt(
                 importedBookings.reduce(
-                  (sum, booking) =>
-                    sum + booking.nightlyRate,
+                  (sum, booking) => sum + booking.nightlyRate,
                   0
                 )
               )}
@@ -732,6 +771,24 @@ async function handleExcelFile(
             {importedBookings.length} rows.
           </p>
         )}
+
+        <Button
+          className="w-full"
+          disabled={
+            importedBookings.length === 0 ||
+            importMutation.isPending
+          }
+          onClick={() => importMutation.mutate(importedBookings)}
+        >
+          {importMutation.isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Importing...
+            </>
+          ) : (
+            `Import ${importedBookings.length} Bookings`
+          )}
+        </Button>
       </>
     )}
   </CardContent>

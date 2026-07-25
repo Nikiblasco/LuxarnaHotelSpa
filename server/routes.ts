@@ -158,6 +158,107 @@ app.get("/api/analytics", async (req, res) => {
   }
 });
 
+
+// ── Historical Excel booking import ─────────────────────────────────────────
+app.post("/api/bookings/import", async (req, res) => {
+  if (!Array.isArray(req.body)) {
+    return res.status(400).json({
+      error: "Expected an array of bookings.",
+    });
+  }
+
+  if (req.body.length === 0) {
+    return res.status(400).json({
+      error: "No bookings were provided.",
+    });
+  }
+
+  if (req.body.length > 5000) {
+    return res.status(413).json({
+      error: "Too many bookings. Import a maximum of 5,000 rows at a time.",
+    });
+  }
+
+  try {
+    const existingBookings = await storage.getAllBookings();
+
+    const existingKeys = new Set(
+      existingBookings.map((booking) =>
+        [
+          String(booking.roomId),
+          new Date(booking.checkIn).toISOString().slice(0, 10),
+          new Date(booking.checkOut).toISOString().slice(0, 10),
+          Number(booking.nightlyRate),
+        ].join("|")
+      )
+    );
+
+    const createdBookings = [];
+    const skippedRows: Array<{
+      index: number;
+      rowNumber?: number;
+      reason: string;
+    }> = [];
+
+    for (let index = 0; index < req.body.length; index += 1) {
+      const incoming = req.body[index];
+
+      const parsed = insertBookingSchema.safeParse({
+        roomId: incoming?.roomId,
+        guestName: incoming?.guestName || "NO NAME",
+        checkIn: incoming?.checkIn,
+        checkOut: incoming?.checkOut,
+        nightlyRate: Number(incoming?.nightlyRate),
+        checkinTime: incoming?.checkinTime,
+        checkoutTime: incoming?.checkoutTime || "12:00 PM",
+      });
+
+      if (!parsed.success) {
+        skippedRows.push({
+          index,
+          rowNumber: incoming?.rowNumber,
+          reason: "Invalid booking data.",
+        });
+        continue;
+      }
+
+      const bookingKey = [
+        String(parsed.data.roomId),
+        new Date(parsed.data.checkIn).toISOString().slice(0, 10),
+        new Date(parsed.data.checkOut).toISOString().slice(0, 10),
+        Number(parsed.data.nightlyRate),
+      ].join("|");
+
+      if (existingKeys.has(bookingKey)) {
+        skippedRows.push({
+          index,
+          rowNumber: incoming?.rowNumber,
+          reason: "Duplicate booking.",
+        });
+        continue;
+      }
+
+      const created = await storage.createBooking(parsed.data);
+      createdBookings.push(created);
+      existingKeys.add(bookingKey);
+    }
+
+    return res.status(201).json({
+      success: true,
+      imported: createdBookings.length,
+      skipped: skippedRows.length,
+      skippedRows,
+    });
+  } catch (error: any) {
+    console.error("[Historical Import] Error:", error);
+
+    return res.status(500).json({
+      error: error?.message ?? "Unable to import historical bookings.",
+    });
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 app.delete("/api/bookings/:id", async (req, res) => {
   const { id } = req.params;
   const deleted = await storage.deleteBooking(id);
