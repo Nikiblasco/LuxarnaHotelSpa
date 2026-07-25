@@ -1,3 +1,18 @@
+import type { AnalyticsBooking } from "./analytics/types";
+import {
+  countBookings,
+  countUniqueGuests,
+  filterBookingsByPeriod,
+} from "./analytics/bookings";
+import {
+  calculateAverageDailyRate,
+  calculateTotalRevenue,
+} from "./analytics/revenue";
+import {
+  calculateOccupancyRate,
+  calculateRevPAR,
+  calculateTotalRoomNights,
+} from "./analytics/occupancy";
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
@@ -31,6 +46,116 @@ app.get("/api/bookings/stats", async (_req, res) => {
   res.json(all);
   console.log("Stats bookings:", all.length);
 console.log(all);
+});
+
+app.get("/api/analytics", async (req, res) => {
+  try {
+    const now = new Date();
+
+    const defaultStart = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      1
+    );
+
+    const defaultEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0
+    );
+
+    const periodStart = req.query.start
+      ? new Date(String(req.query.start))
+      : defaultStart;
+
+    const periodEnd = req.query.end
+      ? new Date(String(req.query.end))
+      : defaultEnd;
+
+    periodStart.setHours(0, 0, 0, 0);
+    periodEnd.setHours(23, 59, 59, 999);
+
+    if (
+      Number.isNaN(periodStart.getTime()) ||
+      Number.isNaN(periodEnd.getTime())
+    ) {
+      return res.status(400).json({
+        error: "Invalid date. Use YYYY-MM-DD.",
+      });
+    }
+
+    if (periodStart > periodEnd) {
+      return res.status(400).json({
+        error: "The start date cannot be after the end date.",
+      });
+    }
+
+    const storedBookings = await storage.getAllBookings();
+
+    const analyticsBookings: AnalyticsBooking[] = storedBookings
+      .map((booking) => ({
+        id: String(booking.id),
+        roomId: String(booking.roomId),
+        guestName: booking.guestName ?? "NO NAME",
+        checkIn: new Date(booking.checkIn),
+        checkOut: new Date(booking.checkOut),
+        nightlyRate: Number(booking.nightlyRate),
+      }))
+      .filter(
+        (booking) =>
+          !Number.isNaN(booking.checkIn.getTime()) &&
+          !Number.isNaN(booking.checkOut.getTime()) &&
+          Number.isFinite(booking.nightlyRate) &&
+          booking.nightlyRate >= 0
+      );
+
+    const bookingsInPeriod = filterBookingsByPeriod(
+      analyticsBookings,
+      periodStart,
+      periodEnd
+    );
+
+    const totalRevenue =
+      calculateTotalRevenue(bookingsInPeriod);
+
+    const totalRoomNights =
+      calculateTotalRoomNights(bookingsInPeriod);
+
+    const occupancyRate = calculateOccupancyRate(
+      bookingsInPeriod,
+      periodStart,
+      periodEnd
+    );
+
+    const averageDailyRate =
+      calculateAverageDailyRate(bookingsInPeriod);
+
+    const revPAR = calculateRevPAR(
+      totalRevenue,
+      periodStart,
+      periodEnd
+    );
+
+    return res.json({
+      period: {
+        start: periodStart.toISOString(),
+        end: periodEnd.toISOString(),
+      },
+      totalRevenue,
+      totalBookings: countBookings(bookingsInPeriod),
+      uniqueGuests: countUniqueGuests(bookingsInPeriod),
+      totalRoomNights,
+      occupancyRate,
+      averageDailyRate,
+      revPAR,
+    });
+  } catch (error) {
+    console.error("[Analytics] Error:", error);
+
+    return res.status(500).json({
+      error: "Unable to calculate analytics.",
+    });
+  }
 });
 
 app.delete("/api/bookings/:id", async (req, res) => {
