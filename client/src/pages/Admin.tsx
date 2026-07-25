@@ -73,10 +73,10 @@ function fmt(n: number) {
 
 function normalizeHeader(value: unknown): string {
   return String(value ?? "")
-    .trim()
     .toLowerCase()
     .replace(/[.\-_]/g, " ")
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function excelDateToString(value: unknown): string | null {
