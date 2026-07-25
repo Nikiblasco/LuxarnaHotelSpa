@@ -121,41 +121,54 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createBooking(booking: InsertBooking): Promise<Booking> {
-    const id = randomUUID();
-    const room = ROOMS.find((r) => r.id === booking.roomId);
+  const id = randomUUID();
+  const room = ROOMS.find((r) => r.id === booking.roomId);
 
-    const { data, error } = await (getSupabase() as any )
-      .from("bookings")
-      .insert({
-        id,
-        room_id: booking.roomId,
-        room_name: room?.name ?? booking.roomId,
-        guest_name: booking.guestName,
-        check_in: new Date(booking.checkIn).toISOString(),
-        check_out: new Date(booking.checkOut).toISOString(),
-        checkin_time: booking.checkinTime ?? null,
-        checkout_time: booking.checkoutTime ?? "12:00 PM",
-        nightly_rate: booking.nightlyRate,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("[Storage] createBooking error:", error.message);
-      throw new Error(error.message);
-    }
-
-    return {
-      id: data.id,
-      roomId: data.room_id,
-      guestName: data.guest_name,
-      checkIn: new Date(data.check_in),
-      checkOut: new Date(data.check_out),
-      checkinTime: data.checkin_time ?? null,
-      checkoutTime: data.checkout_time ?? "12:00 PM",
-      nightlyRate: Number(data.nightly_rate),
-    };
+  if (!room) {
+    throw new Error(`Room ${booking.roomId} was not found.`);
   }
+
+  const suppliedRate = Number(booking.nightlyRate);
+
+  // Historical/manual bookings can supply their original rate.
+  // Normal bookings fall back to the room's current price.
+  const nightlyRate =
+    Number.isFinite(suppliedRate) && suppliedRate > 0
+      ? suppliedRate
+      : room.price;
+
+  const { data, error } = await (getSupabase() as any)
+    .from("bookings")
+    .insert({
+      id,
+      room_id: booking.roomId,
+      room_name: room.name,
+      guest_name: booking.guestName,
+      check_in: new Date(booking.checkIn).toISOString(),
+      check_out: new Date(booking.checkOut).toISOString(),
+      checkin_time: booking.checkinTime ?? null,
+      checkout_time: booking.checkoutTime ?? "12:00 PM",
+      nightly_rate: nightlyRate,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("[Storage] createBooking error:", error.message);
+    throw new Error(error.message);
+  }
+
+  return {
+    id: data.id,
+    roomId: data.room_id,
+    guestName: data.guest_name,
+    checkIn: new Date(data.check_in),
+    checkOut: new Date(data.check_out),
+    checkinTime: data.checkin_time ?? null,
+    checkoutTime: data.checkout_time ?? "12:00 PM",
+    nightlyRate: Number(data.nightly_rate),
+  };
+}
 
   async deleteBooking(id: string): Promise<boolean> {
     const { error, count } = await getSupabase()
