@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
+import * as XLSX from "xlsx";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
@@ -10,8 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Room, Booking } from "@shared/schema";
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
-
+import { FileSpreadsheet, Loader2, Upload } from "lucide-react";
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 const OLD_ROOM_PRICES: Record<string, number> = {
@@ -58,6 +58,179 @@ function nightsBetween(checkIn: Date, checkOut: Date) {
 
 function fmt(n: number) {
   return "₦" + n.toLocaleString("en-NG");
+}
+
+ type ImportedBooking = {
+  sheetName: string;
+  rowNumber: number;
+  roomId: string;
+  guestName: string;
+  checkIn: string;
+  checkOut: string;
+  nightlyRate: number;
+  paymentMethod: string;
+};
+
+function normalizeHeader(value: unknown): string {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[.\-_]/g, " ")
+    .replace(/\s+/g, " ");
+}
+
+function excelDateToString(value: unknown): string | null {
+  if (value instanceof Date && !Number.isNaN(value.getTime())) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, "0");
+    const day = String(value.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+  }
+
+  if (typeof value === "number") {
+    const parsed = XLSX.SSF.parse_date_code(value);
+
+    if (!parsed) return null;
+
+    return [
+      parsed.y,
+      String(parsed.m).padStart(2, "0"),
+      String(parsed.d).padStart(2, "0"),
+    ].join("-");
+  }
+
+  const text = String(value ?? "").trim();
+
+  if (!text) return null;
+
+  // Handles dates such as 1/5/2026.
+  const slashDate = text.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
+  );
+
+  if (slashDate) {
+    const [, month, day, year] = slashDate;
+
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+
+  // Handles dates already written as 2026-01-05.
+  const isoDate = text.match(
+    /^(\d{4})-(\d{1,2})-(\d{1,2})$/
+  );
+
+  if (isoDate) {
+    const [, year, month, day] = isoDate;
+
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+
+  return null;
+}
+
+function getNextDate(dateString: string): string {
+  const [year, month, day] = dateString
+    .split("-")
+    .map(Number);
+
+  const date = new Date(Date.UTC(year, month - 1, day));
+  date.setUTCDate(date.getUTCDate() + 1);
+
+  return date.toISOString().slice(0, 10);
+}
+
+function parseHistoricalWorkbook(
+  workbook: XLSX.WorkBook
+): ImportedBooking[] {
+  const importedBookings: ImportedBooking[] = [];
+
+  for (const sheetName of workbook.SheetNames) {
+    const sheet = workbook.Sheets[sheetName];
+
+    const rows = XLSX.utils.sheet_to_json<unknown[]>(sheet, {
+      header: 1,
+      defval: "",
+      raw: true,
+    });
+
+    if (rows.length < 2) continue;
+
+    const headers = rows[0].map(normalizeHeader);
+
+    const dateColumn = headers.findIndex(header =>
+      header === "date"
+    );
+
+    const roomColumn = headers.findIndex(header =>
+      ["room no", "room number", "room", "room id"].includes(header)
+    );
+
+    const amountColumn = headers.findIndex(header =>
+      ["amount", "price", "nightly rate", "rate"].includes(header)
+    );
+
+    const paymentColumn = headers.findIndex(header =>
+      ["payment method", "payment", "method"].includes(header)
+    );
+
+    if (
+      dateColumn === -1 ||
+      roomColumn === -1 ||
+      amountColumn === -1
+    ) {
+      console.warn(
+        `[Excel Import] Skipping "${sheetName}" because required columns were not found.`
+      );
+
+      continue;
+    }
+
+    let currentDate: string | null = null;
+
+    rows.slice(1).forEach((row, index) => {
+      const suppliedDate = excelDateToString(row[dateColumn]);
+
+      if (suppliedDate) {
+        currentDate = suppliedDate;
+      }
+
+      const roomId = String(row[roomColumn] ?? "")
+        .trim()
+        .replace(/\.0$/, "");
+
+      const nightlyRate = Number(
+        String(row[amountColumn] ?? "")
+          .replace(/[₦,\s]/g, "")
+      );
+
+      // Ignore blank or incomplete spreadsheet rows.
+      if (
+        !currentDate ||
+        !roomId ||
+        !Number.isFinite(nightlyRate) ||
+        nightlyRate <= 0
+      ) {
+        return;
+      }
+
+      importedBookings.push({
+        sheetName,
+        rowNumber: index + 2,
+        roomId,
+        guestName: "NO NAME",
+        checkIn: currentDate,
+        checkOut: getNextDate(currentDate),
+        nightlyRate,
+        paymentMethod:
+          paymentColumn >= 0
+            ? String(row[paymentColumn] ?? "").trim()
+            : "",
+      });
+    });
+  }
+
+  return importedBookings;
 }
 
 // ── Monthly stats widget (inline, no external chart lib needed) ───────────────
@@ -200,7 +373,65 @@ export default function Admin() {
   const [checkIn,      setCheckIn]      = useState("");
   const [checkOut,     setCheckOut]     = useState("");
   const [checkinTime,  setCheckinTime]  = useState("");
+  const excelInputRef = useRef<HTMLInputElement>(null);
 
+const [importedBookings, setImportedBookings] =
+  useState<ImportedBooking[]>([]);
+
+const [importFileName, setImportFileName] = useState("");
+const [isReadingExcel, setIsReadingExcel] = useState(false);
+async function handleExcelFile(
+  event: React.ChangeEvent<HTMLInputElement>
+) {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  try {
+    setIsReadingExcel(true);
+    setImportedBookings([]);
+    setImportFileName(file.name);
+
+    const fileBuffer = await file.arrayBuffer();
+
+    const workbook = XLSX.read(fileBuffer, {
+      type: "array",
+      cellDates: true,
+    });
+
+    const parsedBookings = parseHistoricalWorkbook(workbook);
+
+    if (parsedBookings.length === 0) {
+      throw new Error(
+        "No valid bookings were found. Check the DATE, ROOM NO. and AMOUNT columns."
+      );
+    }
+
+    setImportedBookings(parsedBookings);
+
+    toast({
+      title: "Excel file loaded",
+      description: `${parsedBookings.length} booking rows are ready for review.`,
+    });
+  } catch (error: any) {
+    console.error("[Excel Import] Read error:", error);
+
+    setImportedBookings([]);
+    setImportFileName("");
+
+    toast({
+      title: "Unable to read Excel file",
+      description:
+        error.message ?? "Please check the spreadsheet format.",
+      variant: "destructive",
+    });
+  } finally {
+    setIsReadingExcel(false);
+
+    // Allows the same file to be selected again.
+    event.target.value = "";
+  }
+}
   // ── Server-side login ─────────────────────────────────────────────────────
   const loginMutation = useMutation({
     mutationFn: async (pwd: string) => {
@@ -374,7 +605,137 @@ export default function Admin() {
             </Button>
           </CardContent>
         </Card>
+{/* Historical Excel Import */}
+<Card>
+  <CardHeader>
+    <CardTitle>Import Historical Bookings</CardTitle>
+  </CardHeader>
 
+  <CardContent className="space-y-6">
+    <input
+      ref={excelInputRef}
+      type="file"
+      accept=".xlsx,.xls"
+      className="hidden"
+      onChange={handleExcelFile}
+    />
+
+    <div className="flex flex-wrap items-center gap-3">
+      <Button
+        type="button"
+        variant="outline"
+        disabled={isReadingExcel}
+        onClick={() => excelInputRef.current?.click()}
+      >
+        {isReadingExcel ? (
+          <>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            Reading Excel…
+          </>
+        ) : (
+          <>
+            <Upload className="w-4 h-4 mr-2" />
+            Select Monthly Excel File
+          </>
+        )}
+      </Button>
+
+      {importFileName && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <FileSpreadsheet className="w-4 h-4" />
+          {importFileName}
+        </div>
+      )}
+    </div>
+
+    {importedBookings.length > 0 && (
+      <>
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div className="rounded-lg bg-muted p-4">
+            <p className="text-xs text-muted-foreground">
+              Rows detected
+            </p>
+            <p className="text-xl font-semibold">
+              {importedBookings.length}
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-muted p-4">
+            <p className="text-xs text-muted-foreground">
+              Estimated revenue
+            </p>
+            <p className="text-xl font-semibold">
+              {fmt(
+                importedBookings.reduce(
+                  (sum, booking) =>
+                    sum + booking.nightlyRate,
+                  0
+                )
+              )}
+            </p>
+          </div>
+
+          <div className="rounded-lg bg-muted p-4">
+            <p className="text-xs text-muted-foreground">
+              Guest names
+            </p>
+            <p className="text-xl font-semibold">
+              NO NAME
+            </p>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto border rounded-lg">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-muted">
+              <tr>
+                <th className="p-3">Row</th>
+                <th className="p-3">Date</th>
+                <th className="p-3">Room</th>
+                <th className="p-3 text-right">Amount</th>
+                <th className="p-3">Payment</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {importedBookings
+                .slice(0, 10)
+                .map((booking, index) => (
+                  <tr
+                    key={`${booking.sheetName}-${booking.rowNumber}-${index}`}
+                    className="border-b"
+                  >
+                    <td className="p-3">
+                      {booking.rowNumber}
+                    </td>
+                    <td className="p-3">
+                      {booking.checkIn}
+                    </td>
+                    <td className="p-3">
+                      {booking.roomId}
+                    </td>
+                    <td className="p-3 text-right">
+                      {fmt(booking.nightlyRate)}
+                    </td>
+                    <td className="p-3">
+                      {booking.paymentMethod || "—"}
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+
+        {importedBookings.length > 10 && (
+          <p className="text-sm text-muted-foreground">
+            Showing the first 10 of{" "}
+            {importedBookings.length} rows.
+          </p>
+        )}
+      </>
+    )}
+  </CardContent>
+</Card>
         {/* Active Bookings */}
         <Card>
           <CardHeader><CardTitle>Active Bookings</CardTitle></CardHeader>
