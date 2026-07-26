@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Room, Booking } from "@shared/schema";
 import { format } from "date-fns";
-import { FileSpreadsheet, Loader2, Upload } from "lucide-react";
+import { ArrowRight, Building2, FileSpreadsheet, Loader2, Upload, UtensilsCrossed, Wine } from "lucide-react";
 // ── helpers ───────────────────────────────────────────────────────────────────
 
 const OLD_ROOM_PRICES: Record<string, number> = {
@@ -559,6 +559,100 @@ async function handleExcelFile(
     <div className="min-h-screen bg-background">
       <Navigation />
       <div className="max-w-7xl mx-auto px-4 py-24 space-y-12">
+        {/* Reports Hub */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Reports Hub</CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-3">
+              <div className="rounded-lg border p-5 flex flex-col">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="rounded-md bg-muted p-2">
+                    <Building2 className="w-5 h-5" />
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold">Accommodation Reports</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Import historical room bookings.
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-auto"
+                  onClick={() => {
+                    document
+                      .getElementById("accommodation-reports")
+                      ?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
+                  Open Accommodation
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+
+              <div className="rounded-lg border p-5 flex flex-col">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="rounded-md bg-muted p-2">
+                    <UtensilsCrossed className="w-5 h-5" />
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold">Restaurant Reports</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Import monthly kitchen reports.
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-auto"
+                  onClick={() => {
+                    window.location.href =
+                      "/admin/restaurant-reports";
+                  }}
+                >
+                  Open Restaurant
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+
+              <div className="rounded-lg border p-5 flex flex-col">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="rounded-md bg-muted p-2">
+                    <Wine className="w-5 h-5" />
+                  </div>
+
+                  <div>
+                    <h3 className="font-semibold">Bar Reports</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Import monthly bar reports.
+                    </p>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full mt-auto"
+                  onClick={() => {
+                    window.location.href = "/admin/bar-reports";
+                  }}
+                >
+                  Open Bar
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <div className="flex items-center gap-2 mb-4">
   <input
     type="checkbox"
@@ -646,7 +740,7 @@ async function handleExcelFile(
           </CardContent>
         </Card>
 {/* Historical Excel Import */}
-<Card>
+<Card id="accommodation-reports">
   <CardHeader>
     <CardTitle>Import Historical Bookings</CardTitle>
   </CardHeader>
