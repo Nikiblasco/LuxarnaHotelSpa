@@ -27,6 +27,28 @@ import path from "path";
 
 // Set timezone to Lagos
 process.env.TZ = "Africa/Lagos";
+function normalizeSalesDepartment(
+  value: unknown
+): Department | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const department = value.trim().toLowerCase();
+
+  if (
+    department === "restaurant" ||
+    department === "kitchen"
+  ) {
+    return "kitchen";
+  }
+
+  if (department === "bar") {
+    return "bar";
+  }
+
+  return null;
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -94,24 +116,29 @@ app.get("/api/analytics", async (req, res) => {
       });
     }
 
-    const storedBookings = await storage.getAllBookings();
+    const [storedBookings, departmentSales] =
+      await Promise.all([
+        storage.getAllBookings(),
+        storage.getAllDepartmentSales(),
+      ]);
 
-    const analyticsBookings: AnalyticsBooking[] = storedBookings
-      .map((booking) => ({
-        id: String(booking.id),
-        roomId: String(booking.roomId),
-        guestName: booking.guestName ?? "NO NAME",
-        checkIn: new Date(booking.checkIn),
-        checkOut: new Date(booking.checkOut),
-        nightlyRate: Number(booking.nightlyRate),
-      }))
-      .filter(
-        (booking) =>
-          !Number.isNaN(booking.checkIn.getTime()) &&
-          !Number.isNaN(booking.checkOut.getTime()) &&
-          Number.isFinite(booking.nightlyRate) &&
-          booking.nightlyRate >= 0
-      );
+    const analyticsBookings: AnalyticsBooking[] =
+      storedBookings
+        .map((booking) => ({
+          id: String(booking.id),
+          roomId: String(booking.roomId),
+          guestName: booking.guestName ?? "NO NAME",
+          checkIn: new Date(booking.checkIn),
+          checkOut: new Date(booking.checkOut),
+          nightlyRate: Number(booking.nightlyRate),
+        }))
+        .filter(
+          (booking) =>
+            !Number.isNaN(booking.checkIn.getTime()) &&
+            !Number.isNaN(booking.checkOut.getTime()) &&
+            Number.isFinite(booking.nightlyRate) &&
+            booking.nightlyRate >= 0
+        );
 
     const bookingsInPeriod = filterBookingsByPeriod(
       analyticsBookings,
@@ -119,8 +146,60 @@ app.get("/api/analytics", async (req, res) => {
       periodEnd
     );
 
-    const totalRevenue =
+    const salesInPeriod = departmentSales.filter((sale) => {
+      const saleDate = new Date(
+        `${sale.saleDate}T00:00:00`
+      );
+
+      if (Number.isNaN(saleDate.getTime())) {
+        return false;
+      }
+
+      return (
+        saleDate >= periodStart &&
+        saleDate <= periodEnd
+      );
+    });
+
+    // Accommodation revenue only
+    const lodgingRevenue =
       calculateTotalRevenue(bookingsInPeriod);
+
+    // Restaurant revenue is stored as "kitchen"
+    const kitchenRevenue = salesInPeriod
+      .filter((sale) => sale.department === "kitchen")
+      .reduce((total, sale) => {
+        const amount = Number(sale.total);
+
+        return (
+          total +
+          (Number.isFinite(amount) && amount >= 0
+            ? amount
+            : 0)
+        );
+      }, 0);
+
+    const barRevenue = salesInPeriod
+      .filter((sale) => sale.department === "bar")
+      .reduce((total, sale) => {
+        const amount = Number(sale.total);
+
+        return (
+          total +
+          (Number.isFinite(amount) && amount >= 0
+            ? amount
+            : 0)
+        );
+      }, 0);
+
+    // Spa data has not been connected yet.
+    const spaRevenue = 0;
+
+    const totalRevenue =
+      lodgingRevenue +
+      kitchenRevenue +
+      barRevenue +
+      spaRevenue;
 
     const totalRoomNights =
       calculateTotalRoomNights(bookingsInPeriod);
@@ -131,11 +210,13 @@ app.get("/api/analytics", async (req, res) => {
       periodEnd
     );
 
+    // ADR and RevPAR must use lodging revenue,
+    // not restaurant or bar revenue.
     const averageDailyRate =
       calculateAverageDailyRate(bookingsInPeriod);
 
     const revPAR = calculateRevPAR(
-      totalRevenue,
+      lodgingRevenue,
       periodStart,
       periodEnd
     );
@@ -145,13 +226,27 @@ app.get("/api/analytics", async (req, res) => {
         start: periodStart.toISOString(),
         end: periodEnd.toISOString(),
       },
+
       totalRevenue,
+      lodgingRevenue,
+      kitchenRevenue,
+      barRevenue,
+      spaRevenue,
+
       totalBookings: countBookings(bookingsInPeriod),
       uniqueGuests: countUniqueGuests(bookingsInPeriod),
       totalRoomNights,
       occupancyRate,
       averageDailyRate,
       revPAR,
+
+      revenueSources: {
+        lodging: lodgingRevenue,
+        kitchen: kitchenRevenue,
+        bar: barRevenue,
+        spa: spaRevenue,
+        total: totalRevenue,
+      },
     });
   } catch (error) {
     console.error("[Analytics] Error:", error);
@@ -161,24 +256,6 @@ app.get("/api/analytics", async (req, res) => {
     });
   }
 });
-
-
-// ── Restaurant and Bar sales routes ──────────────────────────────────────────
-// The database/storage layer currently uses "kitchen" for restaurant sales.
-// These routes also accept "restaurant" so the frontend can use that name.
-function normalizeSalesDepartment(
-  value: unknown
-): Department | null {
-  if (value === "restaurant" || value === "kitchen") {
-    return "kitchen";
-  }
-
-  if (value === "bar") {
-    return "bar";
-  }
-
-  return null;
-}
 
 app.get("/api/department-sales/:department", async (req, res) => {
   const department = normalizeSalesDepartment(
