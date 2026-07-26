@@ -11,6 +11,7 @@ import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
 import RestaurantReports from "@/pages/RestaurantReports";
+import BarReports from "@/pages/BarReports";
 import NotFound from "@/pages/not-found";
 import LoyaltySignUp from "@/pages/LoyaltySignUp";
 import ChatBot from "@/components/ChatBot";
@@ -29,6 +30,10 @@ function Router() {
       />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
+      <Route
+  path="/admin/bar-reports"
+  component={BarReports}
+/>
 
       <Route
         path="/admin/restaurant-reports"
