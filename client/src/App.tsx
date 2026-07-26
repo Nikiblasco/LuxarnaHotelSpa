@@ -10,6 +10,7 @@ import Restaurant from "@/pages/Restaurant";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
+import RestaurantReports from "@/pages/RestaurantReports";
 import NotFound from "@/pages/not-found";
 import LoyaltySignUp from "@/pages/LoyaltySignUp";
 import ChatBot from "@/components/ChatBot";
@@ -22,12 +23,30 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/rooms" component={Rooms} />
       <Route path="/spa" component={Spa} />
-      <Route path="/restaurant" component={Restaurant} />
+      <Route
+        path="/restaurant"
+        component={Restaurant}
+      />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
+
+      <Route
+        path="/admin/restaurant-reports"
+        component={RestaurantReports}
+      />
+
       <Route path="/admin" component={Admin} />
-      <Route path="/loyalty-signup" component={LoyaltySignUp} />
-      <Route path="/checkout" component={Checkout} />
+
+      <Route
+        path="/loyalty-signup"
+        component={LoyaltySignUp}
+      />
+
+      <Route
+        path="/checkout"
+        component={Checkout}
+      />
+
       <Route component={NotFound} />
     </Switch>
   );

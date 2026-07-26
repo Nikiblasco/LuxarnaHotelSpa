@@ -15,7 +15,11 @@ import {
 } from "./analytics/occupancy";
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import {
+  storage,
+  type Department,
+  type InsertDepartmentSale,
+} from "./storage";
 import { insertBookingSchema } from "@shared/schema";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import fs from "fs";
@@ -157,6 +161,377 @@ app.get("/api/analytics", async (req, res) => {
     });
   }
 });
+
+
+// ── Restaurant and Bar sales routes ──────────────────────────────────────────
+// The database/storage layer currently uses "kitchen" for restaurant sales.
+// These routes also accept "restaurant" so the frontend can use that name.
+function normalizeSalesDepartment(
+  value: unknown
+): Department | null {
+  if (value === "restaurant" || value === "kitchen") {
+    return "kitchen";
+  }
+
+  if (value === "bar") {
+    return "bar";
+  }
+
+  return null;
+}
+
+app.get("/api/department-sales/:department", async (req, res) => {
+  const department = normalizeSalesDepartment(
+    req.params.department
+  );
+
+  if (!department) {
+    return res.status(400).json({
+      error:
+        'Department must be "restaurant", "kitchen", or "bar".',
+    });
+  }
+
+  try {
+    const sales = await storage.getDepartmentSales(department);
+    return res.json(sales);
+  } catch (error: any) {
+    console.error("[Department Sales] Fetch error:", error);
+
+    return res.status(500).json({
+      error:
+        error?.message ??
+        "Unable to load department sales.",
+    });
+  }
+});
+
+app.post("/api/department-sales", async (req, res) => {
+  const {
+    department: rawDepartment,
+    saleDate,
+    description,
+    quantity,
+    roomReference,
+    unitAmount,
+    total,
+    paymentMethod,
+    staffName,
+  } = req.body ?? {};
+
+  const department = normalizeSalesDepartment(rawDepartment);
+
+  if (!department) {
+    return res.status(400).json({
+      error:
+        'Department must be "restaurant", "kitchen", or "bar".',
+    });
+  }
+
+  if (
+    typeof saleDate !== "string" ||
+    !saleDate.trim()
+  ) {
+    return res.status(400).json({
+      error: "Sale date is required.",
+    });
+  }
+
+  if (
+    typeof description !== "string" ||
+    !description.trim()
+  ) {
+    return res.status(400).json({
+      error: "Description is required.",
+    });
+  }
+
+  const parsedQuantity = Number(quantity ?? 0);
+  const parsedUnitAmount = Number(unitAmount ?? 0);
+  const parsedTotal = Number(total ?? 0);
+
+  if (
+    !Number.isFinite(parsedQuantity) ||
+    !Number.isFinite(parsedUnitAmount) ||
+    !Number.isFinite(parsedTotal)
+  ) {
+    return res.status(400).json({
+      error:
+        "Quantity, unit amount, and total must be valid numbers.",
+    });
+  }
+
+  if (
+    parsedQuantity < 0 ||
+    parsedUnitAmount < 0 ||
+    parsedTotal < 0
+  ) {
+    return res.status(400).json({
+      error:
+        "Quantity, unit amount, and total cannot be negative.",
+    });
+  }
+
+  const sale: InsertDepartmentSale = {
+    department,
+    saleDate: saleDate.trim(),
+    description: description.trim(),
+    quantity: parsedQuantity,
+    roomReference:
+      typeof roomReference === "string" &&
+      roomReference.trim()
+        ? roomReference.trim()
+        : null,
+    unitAmount: parsedUnitAmount,
+    total: parsedTotal,
+    paymentMethod:
+      typeof paymentMethod === "string" &&
+      paymentMethod.trim()
+        ? paymentMethod.trim()
+        : null,
+    staffName:
+      typeof staffName === "string" &&
+      staffName.trim()
+        ? staffName.trim()
+        : null,
+  };
+
+  try {
+    const created =
+      await storage.createDepartmentSale(sale);
+
+    return res.status(201).json(created);
+  } catch (error: any) {
+    console.error("[Department Sales] Create error:", error);
+
+    return res.status(500).json({
+      error:
+        error?.message ??
+        "Unable to save department sale.",
+    });
+  }
+});
+
+app.delete("/api/department-sales/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!id?.trim()) {
+    return res.status(400).json({
+      error: "Sale ID is required.",
+    });
+  }
+
+  try {
+    const deleted =
+      await storage.deleteDepartmentSale(id);
+
+    if (!deleted) {
+      return res.status(404).json({
+        error: "Sale not found.",
+      });
+    }
+
+    return res.json({ success: true });
+  } catch (error: any) {
+    console.error("[Department Sales] Delete error:", error);
+
+    return res.status(500).json({
+      error:
+        error?.message ??
+        "Unable to delete department sale.",
+    });
+  }
+});
+
+app.post("/api/department-sales/import", async (req, res) => {
+  if (!Array.isArray(req.body)) {
+    return res.status(400).json({
+      error: "Expected an array of sales.",
+    });
+  }
+
+  if (req.body.length == 0) {
+    return res.status(400).json({
+      error: "No sales were provided.",
+    });
+  }
+
+  if (req.body.length > 5000) {
+    return res.status(413).json({
+      error:
+        "Too many sales. Import a maximum of 5,000 rows at a time.",
+    });
+  }
+
+  try {
+    const existingSales =
+      await storage.getAllDepartmentSales();
+
+    const makeSaleKey = (sale: {
+      department: Department;
+      saleDate: string;
+      description: string;
+      roomReference?: string | null;
+      quantity?: number | null;
+      unitAmount?: number | null;
+      total?: number | null;
+    }) =>
+      [
+        sale.department,
+        sale.saleDate.trim(),
+        sale.description.trim().toLowerCase(),
+        sale.roomReference?.trim().toLowerCase() ?? "",
+        Number(sale.quantity ?? 0),
+        Number(sale.unitAmount ?? 0),
+        Number(sale.total ?? 0),
+      ].join("|");
+
+    const existingKeys = new Set(
+      existingSales.map(makeSaleKey)
+    );
+
+    const importedSales = [];
+    const skippedRows: Array<{
+      index: number;
+      rowNumber?: number;
+      reason: string;
+    }> = [];
+
+    for (
+      let index = 0;
+      index < req.body.length;
+      index += 1
+    ) {
+      const incoming = req.body[index] ?? {};
+
+      const department = normalizeSalesDepartment(
+        incoming.department
+      );
+
+      const saleDate = String(
+        incoming.saleDate ?? ""
+      ).trim();
+
+      const description = String(
+        incoming.description ?? ""
+      ).trim();
+
+      const parsedQuantity = Number(
+        incoming.quantity ?? 0
+      );
+
+      const parsedUnitAmount = Number(
+        incoming.unitAmount ?? 0
+      );
+
+      const parsedTotal = Number(
+        incoming.total ?? 0
+      );
+
+      if (!department) {
+        skippedRows.push({
+          index,
+          rowNumber: incoming.rowNumber,
+          reason: "Invalid department.",
+        });
+        continue;
+      }
+
+      if (!saleDate || !description) {
+        skippedRows.push({
+          index,
+          rowNumber: incoming.rowNumber,
+          reason:
+            "Sale date and description are required.",
+        });
+        continue;
+      }
+
+      if (
+        !Number.isFinite(parsedQuantity) ||
+        !Number.isFinite(parsedUnitAmount) ||
+        !Number.isFinite(parsedTotal)
+      ) {
+        skippedRows.push({
+          index,
+          rowNumber: incoming.rowNumber,
+          reason: "Invalid numeric value.",
+        });
+        continue;
+      }
+
+      if (
+        parsedQuantity < 0 ||
+        parsedUnitAmount < 0 ||
+        parsedTotal < 0
+      ) {
+        skippedRows.push({
+          index,
+          rowNumber: incoming.rowNumber,
+          reason: "Numeric values cannot be negative.",
+        });
+        continue;
+      }
+
+      const sale: InsertDepartmentSale = {
+        department,
+        saleDate,
+        description,
+        quantity: parsedQuantity,
+        roomReference:
+          typeof incoming.roomReference === "string" &&
+          incoming.roomReference.trim()
+            ? incoming.roomReference.trim()
+            : null,
+        unitAmount: parsedUnitAmount,
+        total: parsedTotal,
+        paymentMethod:
+          typeof incoming.paymentMethod === "string" &&
+          incoming.paymentMethod.trim()
+            ? incoming.paymentMethod.trim()
+            : null,
+        staffName:
+          typeof incoming.staffName === "string" &&
+          incoming.staffName.trim()
+            ? incoming.staffName.trim()
+            : null,
+      };
+
+      const saleKey = makeSaleKey(sale);
+
+      if (existingKeys.has(saleKey)) {
+        skippedRows.push({
+          index,
+          rowNumber: incoming.rowNumber,
+          reason: "Duplicate sale.",
+        });
+        continue;
+      }
+
+      const created =
+        await storage.createDepartmentSale(sale);
+
+      importedSales.push(created);
+      existingKeys.add(saleKey);
+    }
+
+    return res.status(201).json({
+      success: true,
+      imported: importedSales.length,
+      skipped: skippedRows.length,
+      skippedRows,
+    });
+  } catch (error: any) {
+    console.error("[Department Sales] Import error:", error);
+
+    return res.status(500).json({
+      error:
+        error?.message ??
+        "Unable to import department sales.",
+    });
+  }
+});
+// ─────────────────────────────────────────────────────────────────────────────
 
 
 // ── Historical Excel booking import ─────────────────────────────────────────
