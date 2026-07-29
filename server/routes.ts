@@ -49,6 +49,383 @@ function normalizeSalesDepartment(
 
   return null;
 }
+type RoomAnalyticsDefinition = {
+  roomType: string;
+  roomIds: string[];
+  roomCount: number;
+  defaultNightlyRate: number;
+};
+
+type RoomStatsResult = {
+  roomType: string;
+  roomCount: number;
+  nightlyRate: number;
+
+  monthlyBookings: number;
+  yearlyBookings: number;
+
+  monthlyRevenue: number;
+  yearlyRevenue: number;
+
+  monthlyRoomNights: number;
+  yearlyRoomNights: number;
+
+  monthlyOccupancyRate: number;
+  yearlyOccupancyRate: number;
+};
+
+const ROOM_ANALYTICS_DEFINITIONS: RoomAnalyticsDefinition[] = [
+  {
+    roomType: "King Suite",
+    roomIds: ["206"],
+    roomCount: 1,
+    defaultNightlyRate: 50000,
+  },
+  {
+    roomType: "Queen Suite",
+    roomIds: ["204"],
+    roomCount: 1,
+    defaultNightlyRate: 40000,
+  },
+  {
+    roomType: "Deluxe Room",
+    roomIds: [
+      "101",
+      "102",
+      "201",
+      "202",
+      "203",
+      "205",
+    ],
+    roomCount: 6,
+    defaultNightlyRate: 30000,
+  },
+  {
+    roomType: "Standard Room",
+    roomIds: ["103"],
+    roomCount: 1,
+    defaultNightlyRate: 23000,
+  },
+];
+
+function startOfLocalDay(value: Date): Date {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+function addLocalDays(
+  value: Date,
+  numberOfDays: number
+): Date {
+  const date = new Date(value);
+  date.setDate(date.getDate() + numberOfDays);
+  return date;
+}
+
+function countPeriodDays(
+  periodStart: Date,
+  periodEnd: Date
+): number {
+  const start = startOfLocalDay(periodStart);
+  const endExclusive = addLocalDays(
+    startOfLocalDay(periodEnd),
+    1
+  );
+
+  const difference =
+    endExclusive.getTime() - start.getTime();
+
+  return Math.max(
+    1,
+    Math.round(
+      difference / (1000 * 60 * 60 * 24)
+    )
+  );
+}
+
+function calculateBookingNightsWithinPeriod(
+  booking: AnalyticsBooking,
+  periodStart: Date,
+  periodEnd: Date
+): number {
+  const bookingStart = startOfLocalDay(
+    booking.checkIn
+  );
+
+  const bookingEnd = startOfLocalDay(
+    booking.checkOut
+  );
+
+  const rangeStart = startOfLocalDay(
+    periodStart
+  );
+
+  const rangeEndExclusive = addLocalDays(
+    startOfLocalDay(periodEnd),
+    1
+  );
+
+  const overlapStart = new Date(
+    Math.max(
+      bookingStart.getTime(),
+      rangeStart.getTime()
+    )
+  );
+
+  const overlapEnd = new Date(
+    Math.min(
+      bookingEnd.getTime(),
+      rangeEndExclusive.getTime()
+    )
+  );
+
+  if (overlapEnd <= overlapStart) {
+    return 0;
+  }
+
+  return Math.max(
+    0,
+    Math.round(
+      (overlapEnd.getTime() -
+        overlapStart.getTime()) /
+        (1000 * 60 * 60 * 24)
+    )
+  );
+}
+
+function getRoomDefinition(
+  roomId: string
+): RoomAnalyticsDefinition | undefined {
+  const normalizedRoomId = String(
+    roomId
+  ).trim();
+
+  return ROOM_ANALYTICS_DEFINITIONS.find(
+    (definition) =>
+      definition.roomIds.includes(
+        normalizedRoomId
+      )
+  );
+}
+
+function buildRoomStats(
+  allBookings: AnalyticsBooking[],
+  selectedPeriodBookings: AnalyticsBooking[],
+  selectedPeriodStart: Date,
+  selectedPeriodEnd: Date
+): RoomStatsResult[] {
+  const selectedYear =
+    selectedPeriodStart.getFullYear();
+
+  const yearStart = new Date(
+    selectedYear,
+    0,
+    1
+  );
+
+  const yearEnd = new Date(
+    selectedYear,
+    11,
+    31
+  );
+
+  yearStart.setHours(0, 0, 0, 0);
+  yearEnd.setHours(23, 59, 59, 999);
+
+  const yearlyBookings =
+    filterBookingsByPeriod(
+      allBookings,
+      yearStart,
+      yearEnd
+    );
+
+  const selectedPeriodDays =
+    countPeriodDays(
+      selectedPeriodStart,
+      selectedPeriodEnd
+    );
+
+  const yearDays = countPeriodDays(
+    yearStart,
+    yearEnd
+  );
+
+  return ROOM_ANALYTICS_DEFINITIONS.map(
+    (definition) => {
+      const monthlyRoomBookings =
+        selectedPeriodBookings.filter(
+          (booking) =>
+            definition.roomIds.includes(
+              String(booking.roomId)
+            )
+        );
+
+      const yearlyRoomBookings =
+        yearlyBookings.filter((booking) =>
+          definition.roomIds.includes(
+            String(booking.roomId)
+          )
+        );
+
+      const monthlyRoomNights =
+        monthlyRoomBookings.reduce(
+          (total, booking) =>
+            total +
+            calculateBookingNightsWithinPeriod(
+              booking,
+              selectedPeriodStart,
+              selectedPeriodEnd
+            ),
+          0
+        );
+
+      const yearlyRoomNights =
+        yearlyRoomBookings.reduce(
+          (total, booking) =>
+            total +
+            calculateBookingNightsWithinPeriod(
+              booking,
+              yearStart,
+              yearEnd
+            ),
+          0
+        );
+
+      const monthlyRevenue =
+        monthlyRoomBookings.reduce(
+          (total, booking) => {
+            const nights =
+              calculateBookingNightsWithinPeriod(
+                booking,
+                selectedPeriodStart,
+                selectedPeriodEnd
+              );
+
+            return (
+              total +
+              nights * booking.nightlyRate
+            );
+          },
+          0
+        );
+
+      const yearlyRevenue =
+        yearlyRoomBookings.reduce(
+          (total, booking) => {
+            const nights =
+              calculateBookingNightsWithinPeriod(
+                booking,
+                yearStart,
+                yearEnd
+              );
+
+            return (
+              total +
+              nights * booking.nightlyRate
+            );
+          },
+          0
+        );
+
+      const monthlyAvailableRoomNights =
+        definition.roomCount *
+        selectedPeriodDays;
+
+      const yearlyAvailableRoomNights =
+        definition.roomCount * yearDays;
+
+      const monthlyOccupancyRate =
+        monthlyAvailableRoomNights > 0
+          ? Math.min(
+              100,
+              (monthlyRoomNights /
+                monthlyAvailableRoomNights) *
+                100
+            )
+          : 0;
+
+      const yearlyOccupancyRate =
+        yearlyAvailableRoomNights > 0
+          ? Math.min(
+              100,
+              (yearlyRoomNights /
+                yearlyAvailableRoomNights) *
+                100
+            )
+          : 0;
+
+      const averageRecordedRate =
+        monthlyRoomBookings.length > 0
+          ? monthlyRoomBookings.reduce(
+              (total, booking) =>
+                total +
+                booking.nightlyRate,
+              0
+            ) /
+            monthlyRoomBookings.length
+          : definition.defaultNightlyRate;
+
+      return {
+        roomType: definition.roomType,
+        roomCount: definition.roomCount,
+        nightlyRate: averageRecordedRate,
+
+        monthlyBookings:
+          monthlyRoomBookings.length,
+
+        yearlyBookings:
+          yearlyRoomBookings.length,
+
+        monthlyRevenue,
+        yearlyRevenue,
+
+        monthlyRoomNights,
+        yearlyRoomNights,
+
+        monthlyOccupancyRate,
+        yearlyOccupancyRate,
+      };
+    }
+  );
+}
+
+function getRoomStatsLeader(
+  roomStats: RoomStatsResult[],
+  field:
+    | "monthlyBookings"
+    | "yearlyBookings"
+    | "monthlyRevenue"
+    | "yearlyRevenue"
+    | "monthlyOccupancyRate"
+): RoomStatsResult | null {
+  if (roomStats.length === 0) {
+    return null;
+  }
+
+  return roomStats.reduce(
+    (leader, room) =>
+      room[field] > leader[field]
+        ? room
+        : leader
+  );
+}
+
+function getLeastBookedRoom(
+  roomStats: RoomStatsResult[]
+): RoomStatsResult | null {
+  if (roomStats.length === 0) {
+    return null;
+  }
+
+  return roomStats.reduce(
+    (lowest, room) =>
+      room.monthlyBookings <
+      lowest.monthlyBookings
+        ? room
+        : lowest
+  );
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -220,6 +597,30 @@ app.get("/api/analytics", async (req, res) => {
       periodStart,
       periodEnd
     );
+    const roomStats = buildRoomStats(
+  analyticsBookings,
+  bookingsInPeriod,
+  periodStart,
+  periodEnd
+);
+
+const mostBookedRoom = getRoomStatsLeader(
+  roomStats,
+  "monthlyBookings"
+);
+
+const highestRevenueRoom = getRoomStatsLeader(
+  roomStats,
+  "monthlyRevenue"
+);
+
+const highestOccupancyRoom = getRoomStatsLeader(
+  roomStats,
+  "monthlyOccupancyRate"
+);
+
+const leastBookedRoom =
+  getLeastBookedRoom(roomStats);
 
     return res.json({
       period: {
@@ -247,6 +648,51 @@ app.get("/api/analytics", async (req, res) => {
         spa: spaRevenue,
         total: totalRevenue,
       },
+      roomStats,
+
+roomStatsSummary: {
+  mostBookedRoom: mostBookedRoom
+    ? {
+        roomType: mostBookedRoom.roomType,
+        monthlyBookings:
+          mostBookedRoom.monthlyBookings,
+        yearlyBookings:
+          mostBookedRoom.yearlyBookings,
+      }
+    : null,
+
+  highestRevenueRoom: highestRevenueRoom
+    ? {
+        roomType:
+          highestRevenueRoom.roomType,
+        monthlyRevenue:
+          highestRevenueRoom.monthlyRevenue,
+        yearlyRevenue:
+          highestRevenueRoom.yearlyRevenue,
+      }
+    : null,
+
+  highestOccupancyRoom: highestOccupancyRoom
+    ? {
+        roomType:
+          highestOccupancyRoom.roomType,
+        monthlyOccupancyRate:
+          highestOccupancyRoom.monthlyOccupancyRate,
+        yearlyOccupancyRate:
+          highestOccupancyRoom.yearlyOccupancyRate,
+      }
+    : null,
+
+  leastBookedRoom: leastBookedRoom
+    ? {
+        roomType: leastBookedRoom.roomType,
+        monthlyBookings:
+          leastBookedRoom.monthlyBookings,
+        yearlyBookings:
+          leastBookedRoom.yearlyBookings,
+      }
+    : null,
+},
     });
   } catch (error) {
     console.error("[Analytics] Error:", error);
