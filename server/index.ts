@@ -11,11 +11,24 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://your-analytics-domain.com",
+      "http://127.0.0.1:5173",
+      "http://192.168.1.11:5173",
+      "https://www.luxarnahotel.com",
+      "https://luxarnahotel.com",
     ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
+  }),
 );
 const httpServer = createServer(app);
 
