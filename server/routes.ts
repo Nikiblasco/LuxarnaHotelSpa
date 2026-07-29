@@ -595,6 +595,42 @@ const kitchenAnalytics = {
             : 0)
         );
       }, 0);
+      const barSalesInPeriod = salesInPeriod.filter(
+  (sale) => sale.department === "bar"
+);
+
+const barTotalSales = barSalesInPeriod.length;
+
+const barTotalDrinksSold =
+  barSalesInPeriod.reduce((total, sale) => {
+    const quantity = Number(sale.quantity);
+
+    return (
+      total +
+      (Number.isFinite(quantity) && quantity >= 0
+        ? quantity
+        : 0)
+    );
+  }, 0);
+
+const barAverageSaleValue =
+  barTotalSales > 0
+    ? barRevenue / barTotalSales
+    : 0;
+
+const barAverageRevenuePerDrink =
+  barTotalDrinksSold > 0
+    ? barRevenue / barTotalDrinksSold
+    : 0;
+
+const barAnalytics = {
+  totalRevenue: barRevenue,
+  totalSales: barTotalSales,
+  totalDrinksSold: barTotalDrinksSold,
+  averageSaleValue: barAverageSaleValue,
+  averageRevenuePerDrink:
+    barAverageRevenuePerDrink,
+};
 
     // Spa data has not been connected yet.
     const spaRevenue = 0;
@@ -677,6 +713,7 @@ const leastBookedRoom =
       },
       roomStats,
       kitchenAnalytics,
+      barAnalytics,
 
 roomStatsSummary: {
   mostBookedRoom: mostBookedRoom
