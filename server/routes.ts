@@ -555,7 +555,34 @@ app.get("/api/analytics", async (req, res) => {
             : 0)
         );
       }, 0);
+      const kitchenSalesInPeriod = salesInPeriod.filter(
+  (sale) => sale.department === "kitchen"
+);
+const kitchenTotalSales = kitchenSalesInPeriod.length;
 
+const kitchenTotalItemsSold =
+  kitchenSalesInPeriod.reduce((total, sale) => {
+    const quantity = Number(sale.quantity);
+
+    return (
+      total +
+      (Number.isFinite(quantity) && quantity >= 0
+        ? quantity
+        : 0)
+    );
+  }, 0);
+
+const kitchenAverageSaleValue =
+  kitchenTotalSales > 0
+    ? kitchenRevenue / kitchenTotalSales
+    : 0;
+
+const kitchenAnalytics = {
+  totalRevenue: kitchenRevenue,
+  totalSales: kitchenTotalSales,
+  totalItemsSold: kitchenTotalItemsSold,
+  averageSaleValue: kitchenAverageSaleValue,
+};
     const barRevenue = salesInPeriod
       .filter((sale) => sale.department === "bar")
       .reduce((total, sale) => {
@@ -649,6 +676,7 @@ const leastBookedRoom =
         total: totalRevenue,
       },
       roomStats,
+      kitchenAnalytics,
 
 roomStatsSummary: {
   mostBookedRoom: mostBookedRoom
