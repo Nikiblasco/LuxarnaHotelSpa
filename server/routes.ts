@@ -583,35 +583,46 @@ const kitchenAnalytics = {
   totalItemsSold: kitchenTotalItemsSold,
   averageSaleValue: kitchenAverageSaleValue,
 };
-    const barRevenue = salesInPeriod
-      .filter((sale) => sale.department === "bar")
-      .reduce((total, sale) => {
-        const amount = Number(sale.total);
-
-        return (
-          total +
-          (Number.isFinite(amount) && amount >= 0
-            ? amount
-            : 0)
-        );
-      }, 0);
-      const barSalesInPeriod = salesInPeriod.filter(
+    const barSalesInPeriod = salesInPeriod.filter(
   (sale) => sale.department === "bar"
 );
+const barRevenue =
+  barSalesInPeriod.reduce(
+    (total, sale) => {
+      const amount = Number(
+        sale.total
+      );
 
-const barTotalSales = barSalesInPeriod.length;
+      return (
+        total +
+        (Number.isFinite(amount) &&
+        amount >= 0
+          ? amount
+          : 0)
+      );
+    },
+    0
+  );
+const barTotalSales =
+  barSalesInPeriod.length;
 
 const barTotalDrinksSold =
-  barSalesInPeriod.reduce((total, sale) => {
-    const quantity = Number(sale.quantity);
+  barSalesInPeriod.reduce(
+    (total, sale) => {
+      const quantity = Number(
+        sale.quantity
+      );
 
-    return (
-      total +
-      (Number.isFinite(quantity) && quantity >= 0
-        ? quantity
-        : 0)
-    );
-  }, 0);
+      return (
+        total +
+        (Number.isFinite(quantity) &&
+        quantity >= 0
+          ? quantity
+          : 0)
+      );
+    },
+    0
+  );
 
 const barAverageSaleValue =
   barTotalSales > 0
@@ -623,15 +634,312 @@ const barAverageRevenuePerDrink =
     ? barRevenue / barTotalDrinksSold
     : 0;
 
-const barAnalytics = {
-  totalRevenue: barRevenue,
-  totalSales: barTotalSales,
-  totalDrinksSold: barTotalDrinksSold,
-  averageSaleValue: barAverageSaleValue,
-  averageRevenuePerDrink:
-    barAverageRevenuePerDrink,
+/* =========================================================
+   BAR — INDIVIDUAL DRINK ANALYTICS
+========================================================= */
+
+type BarDrinkAccumulator = {
+  drinkName: string;
+  quantitySold: number;
+  totalSales: number;
+  revenue: number;
 };
 
+const drinkMap =
+  new Map<string, BarDrinkAccumulator>();
+
+for (const sale of barSalesInPeriod) {
+  const rawDrinkName =
+    String(
+      sale.description ?? "Unknown drink"
+    ).trim();
+
+  if (!rawDrinkName) {
+    continue;
+  }
+
+  /*
+   * Normalize the key so:
+   *
+   * "Heineken"
+   * "HEINEKEN"
+   * " heineken "
+   *
+   * all count as the same drink.
+   */
+  const drinkKey =
+    rawDrinkName.toLowerCase();
+
+  const quantity =
+    Number(sale.quantity);
+
+  const revenue =
+    Number(sale.total);
+
+  const safeQuantity =
+    Number.isFinite(quantity) &&
+    quantity >= 0
+      ? quantity
+      : 0;
+
+  const safeRevenue =
+    Number.isFinite(revenue) &&
+    revenue >= 0
+      ? revenue
+      : 0;
+
+  const existing =
+    drinkMap.get(drinkKey);
+
+  if (existing) {
+    existing.quantitySold +=
+      safeQuantity;
+
+    existing.totalSales += 1;
+
+    existing.revenue +=
+      safeRevenue;
+  } else {
+    drinkMap.set(drinkKey, {
+      drinkName: rawDrinkName,
+      quantitySold: safeQuantity,
+      totalSales: 1,
+      revenue: safeRevenue,
+    });
+  }
+}
+
+const drinkStats = Array.from(
+  drinkMap.values()
+)
+  .map((drink) => {
+    const averageRevenuePerDrink =
+      drink.quantitySold > 0
+        ? drink.revenue /
+          drink.quantitySold
+        : 0;
+
+    const averageSaleValue =
+      drink.totalSales > 0
+        ? drink.revenue /
+          drink.totalSales
+        : 0;
+
+    const revenueShare =
+      barRevenue > 0
+        ? (drink.revenue /
+            barRevenue) *
+          100
+        : 0;
+
+    return {
+      drinkName:
+        drink.drinkName,
+
+      quantitySold:
+        drink.quantitySold,
+
+      totalSales:
+        drink.totalSales,
+
+      revenue:
+        drink.revenue,
+
+      averageRevenuePerDrink,
+
+      averageSaleValue,
+
+      revenueShare,
+    };
+  })
+  .sort(
+    (a, b) =>
+      b.revenue - a.revenue
+  );
+
+/*
+ * Highest-grossing drinks.
+ */
+const topRevenueDrinks =
+  [...drinkStats]
+    .sort(
+      (a, b) =>
+        b.revenue - a.revenue
+    )
+    .slice(0, 10);
+
+/*
+ * Most frequently sold drinks
+ * based on quantity.
+ */
+const topSellingDrinks =
+  [...drinkStats]
+    .sort(
+      (a, b) =>
+        b.quantitySold -
+        a.quantitySold
+    )
+    .slice(0, 10);
+
+/* =========================================================
+   BAR — DAILY PERFORMANCE
+========================================================= */
+
+type BarDailyAccumulator = {
+  date: string;
+  revenue: number;
+  totalSales: number;
+  drinksSold: number;
+};
+
+const dailyMap =
+  new Map<
+    string,
+    BarDailyAccumulator
+  >();
+
+for (const sale of barSalesInPeriod) {
+  const date = String(
+    sale.saleDate ?? ""
+  ).trim();
+
+  if (!date) {
+    continue;
+  }
+
+  const quantity =
+    Number(sale.quantity);
+
+  const revenue =
+    Number(sale.total);
+
+  const safeQuantity =
+    Number.isFinite(quantity) &&
+    quantity >= 0
+      ? quantity
+      : 0;
+
+  const safeRevenue =
+    Number.isFinite(revenue) &&
+    revenue >= 0
+      ? revenue
+      : 0;
+
+  const existing =
+    dailyMap.get(date);
+
+  if (existing) {
+    existing.revenue +=
+      safeRevenue;
+
+    existing.totalSales += 1;
+
+    existing.drinksSold +=
+      safeQuantity;
+  } else {
+    dailyMap.set(date, {
+      date,
+      revenue: safeRevenue,
+      totalSales: 1,
+      drinksSold: safeQuantity,
+    });
+  }
+}
+
+const dailyPerformance =
+  Array.from(
+    dailyMap.values()
+  ).sort(
+    (a, b) =>
+      a.date.localeCompare(
+        b.date
+      )
+  );
+
+/* =========================================================
+   BAR — BEST PERFORMANCE
+========================================================= */
+
+const highestRevenueDrink =
+  drinkStats.length > 0
+    ? [...drinkStats].sort(
+        (a, b) =>
+          b.revenue -
+          a.revenue
+      )[0]
+    : null;
+
+const mostSoldDrink =
+  drinkStats.length > 0
+    ? [...drinkStats].sort(
+        (a, b) =>
+          b.quantitySold -
+          a.quantitySold
+      )[0]
+    : null;
+
+const highestRevenueDay =
+  dailyPerformance.length > 0
+    ? [...dailyPerformance].sort(
+        (a, b) =>
+          b.revenue -
+          a.revenue
+      )[0]
+    : null;
+
+const busiestSalesDay =
+  dailyPerformance.length > 0
+    ? [...dailyPerformance].sort(
+        (a, b) =>
+          b.totalSales -
+          a.totalSales
+      )[0]
+    : null;
+
+/* =========================================================
+   FINAL BAR ANALYTICS
+========================================================= */
+
+const barAnalytics = {
+  totalRevenue:
+    barRevenue,
+
+  totalSales:
+    barTotalSales,
+
+  totalDrinksSold:
+    barTotalDrinksSold,
+
+  averageSaleValue:
+    barAverageSaleValue,
+
+  averageRevenuePerDrink:
+    barAverageRevenuePerDrink,
+
+  /*
+   * Full statistics for EVERY drink.
+   */
+  drinkStats,
+
+  /*
+   * Ranked lists.
+   */
+  topSellingDrinks,
+  topRevenueDrinks,
+
+  /*
+   * Daily trend.
+   */
+  dailyPerformance,
+
+  /*
+   * Executive leaders.
+   */
+  highestRevenueDrink,
+  mostSoldDrink,
+  highestRevenueDay,
+  busiestSalesDay,
+};
     // Spa data has not been connected yet.
     const spaRevenue = 0;
 
