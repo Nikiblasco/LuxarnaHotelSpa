@@ -577,11 +577,390 @@ const kitchenAverageSaleValue =
     ? kitchenRevenue / kitchenTotalSales
     : 0;
 
+/* =========================================================
+   KITCHEN — MENU ITEM ANALYTICS
+========================================================= */
+
+type KitchenMenuItemAccumulator = {
+  menuItem: string;
+  quantitySold: number;
+  totalSales: number;
+  revenue: number;
+};
+
+const kitchenMenuItemMap =
+  new Map<string, KitchenMenuItemAccumulator>();
+
+for (const sale of kitchenSalesInPeriod) {
+  const rawMenuItem =
+    String(
+      sale.description ?? "Unknown item"
+    ).trim();
+
+  if (!rawMenuItem) {
+    continue;
+  }
+
+  /*
+   * Normalize descriptions so:
+   *
+   * "Bread"
+   * "BREAD"
+   * " bread "
+   *
+   * all count as the same menu item.
+   */
+  const menuItemKey =
+    rawMenuItem.toLowerCase();
+
+  const quantity =
+    Number(sale.quantity);
+
+  const revenue =
+    Number(sale.total);
+
+  const safeQuantity =
+    Number.isFinite(quantity) &&
+    quantity >= 0
+      ? quantity
+      : 0;
+
+  const safeRevenue =
+    Number.isFinite(revenue) &&
+    revenue >= 0
+      ? revenue
+      : 0;
+
+  const existing =
+    kitchenMenuItemMap.get(
+      menuItemKey
+    );
+
+  if (existing) {
+    existing.quantitySold +=
+      safeQuantity;
+
+    existing.totalSales += 1;
+
+    existing.revenue +=
+      safeRevenue;
+  } else {
+    kitchenMenuItemMap.set(
+      menuItemKey,
+      {
+        menuItem: rawMenuItem,
+        quantitySold: safeQuantity,
+        totalSales: 1,
+        revenue: safeRevenue,
+      }
+    );
+  }
+}
+
+/* =========================================================
+   KITCHEN — BASE ITEM STATS
+========================================================= */
+
+const baseKitchenMenuItemStats =
+  Array.from(
+    kitchenMenuItemMap.values()
+  ).map((item) => {
+    const averageRevenuePerItem =
+      item.quantitySold > 0
+        ? item.revenue /
+          item.quantitySold
+        : 0;
+
+    const averageSaleValue =
+      item.totalSales > 0
+        ? item.revenue /
+          item.totalSales
+        : 0;
+
+    const revenueShare =
+      kitchenRevenue > 0
+        ? (item.revenue /
+            kitchenRevenue) *
+          100
+        : 0;
+
+    return {
+      menuItem:
+        item.menuItem,
+
+      quantitySold:
+        item.quantitySold,
+
+      totalSales:
+        item.totalSales,
+
+      revenue:
+        item.revenue,
+
+      averageRevenuePerItem,
+
+      averageSaleValue,
+
+      revenueShare,
+    };
+  });
+
+/* =========================================================
+   KITCHEN — RANKINGS
+========================================================= */
+
+const kitchenRevenueRanking =
+  [...baseKitchenMenuItemStats].sort(
+    (a, b) =>
+      b.revenue - a.revenue
+  );
+
+const kitchenQuantityRanking =
+  [...baseKitchenMenuItemStats].sort(
+    (a, b) =>
+      b.quantitySold -
+      a.quantitySold
+  );
+
+const kitchenRevenueRankMap =
+  new Map<string, number>();
+
+kitchenRevenueRanking.forEach(
+  (item, index) => {
+    kitchenRevenueRankMap.set(
+      item.menuItem.toLowerCase(),
+      index + 1
+    );
+  }
+);
+
+const kitchenQuantityRankMap =
+  new Map<string, number>();
+
+kitchenQuantityRanking.forEach(
+  (item, index) => {
+    kitchenQuantityRankMap.set(
+      item.menuItem.toLowerCase(),
+      index + 1
+    );
+  }
+);
+
+/* =========================================================
+   KITCHEN — FINAL MENU ITEM STATS
+========================================================= */
+
+const menuItemStats =
+  baseKitchenMenuItemStats
+    .map((item) => {
+      const key =
+        item.menuItem.toLowerCase();
+
+      return {
+        ...item,
+
+        revenueRank:
+          kitchenRevenueRankMap.get(
+            key
+          ) ?? null,
+
+        quantityRank:
+          kitchenQuantityRankMap.get(
+            key
+          ) ?? null,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.revenue - a.revenue
+    );
+
+/*
+ * Top 10 by quantity sold.
+ */
+const topSellingItems =
+  [...menuItemStats]
+    .sort(
+      (a, b) =>
+        b.quantitySold -
+        a.quantitySold
+    )
+    .slice(0, 10);
+
+/*
+ * Top 10 by revenue.
+ */
+const topRevenueItems =
+  [...menuItemStats]
+    .sort(
+      (a, b) =>
+        b.revenue -
+        a.revenue
+    )
+    .slice(0, 10);
+
+/* =========================================================
+   KITCHEN — DAILY PERFORMANCE
+========================================================= */
+
+type KitchenDailyAccumulator = {
+  date: string;
+  revenue: number;
+  totalSales: number;
+  itemsSold: number;
+};
+
+const kitchenDailyMap =
+  new Map<
+    string,
+    KitchenDailyAccumulator
+  >();
+
+for (const sale of kitchenSalesInPeriod) {
+  const date =
+    String(
+      sale.saleDate ?? ""
+    ).trim();
+
+  if (!date) {
+    continue;
+  }
+
+  const quantity =
+    Number(sale.quantity);
+
+  const revenue =
+    Number(sale.total);
+
+  const safeQuantity =
+    Number.isFinite(quantity) &&
+    quantity >= 0
+      ? quantity
+      : 0;
+
+  const safeRevenue =
+    Number.isFinite(revenue) &&
+    revenue >= 0
+      ? revenue
+      : 0;
+
+  const existing =
+    kitchenDailyMap.get(date);
+
+  if (existing) {
+    existing.revenue +=
+      safeRevenue;
+
+    existing.totalSales += 1;
+
+    existing.itemsSold +=
+      safeQuantity;
+  } else {
+    kitchenDailyMap.set(date, {
+      date,
+      revenue: safeRevenue,
+      totalSales: 1,
+      itemsSold: safeQuantity,
+    });
+  }
+}
+
+const kitchenDailyPerformance =
+  Array.from(
+    kitchenDailyMap.values()
+  ).sort(
+    (a, b) =>
+      a.date.localeCompare(
+        b.date
+      )
+  );
+
+/* =========================================================
+   KITCHEN — LEADERS
+========================================================= */
+
+const highestRevenueItem =
+  menuItemStats.length > 0
+    ? [...menuItemStats].sort(
+        (a, b) =>
+          b.revenue -
+          a.revenue
+      )[0]
+    : null;
+
+const mostSoldItem =
+  menuItemStats.length > 0
+    ? [...menuItemStats].sort(
+        (a, b) =>
+          b.quantitySold -
+          a.quantitySold
+      )[0]
+    : null;
+const kitchenHighestRevenueDay =
+  kitchenDailyPerformance.length > 0
+    ? [...kitchenDailyPerformance].sort(
+        (a, b) =>
+          b.revenue -
+          a.revenue
+      )[0]
+    : null;
+
+const kitchenBusiestSalesDay =
+  kitchenDailyPerformance.length > 0
+    ? [...kitchenDailyPerformance].sort(
+        (a, b) =>
+          b.totalSales -
+          a.totalSales
+      )[0]
+    : null;
+/* =========================================================
+   FINAL KITCHEN ANALYTICS
+========================================================= */
+
 const kitchenAnalytics = {
-  totalRevenue: kitchenRevenue,
-  totalSales: kitchenTotalSales,
-  totalItemsSold: kitchenTotalItemsSold,
-  averageSaleValue: kitchenAverageSaleValue,
+  totalRevenue:
+    kitchenRevenue,
+
+  totalSales:
+    kitchenTotalSales,
+
+  totalItemsSold:
+    kitchenTotalItemsSold,
+
+  averageSaleValue:
+    kitchenAverageSaleValue,
+
+  /*
+   * Every unique Kitchen description.
+   * This powers search.
+   */
+  menuItemStats,
+
+  /*
+   * Top 10 lists.
+   */
+  topSellingItems,
+  topRevenueItems,
+
+  /*
+   * Daily Kitchen trend.
+   */
+  dailyPerformance:
+  kitchenDailyPerformance,
+
+highestRevenueItem,
+mostSoldItem,
+
+highestRevenueDay:
+  kitchenHighestRevenueDay,
+
+busiestSalesDay:
+  kitchenBusiestSalesDay,
+  /*
+   * Helpful context for ranking UI.
+   */
+  totalUniqueMenuItems:
+    menuItemStats.length,
 };
     const barSalesInPeriod = salesInPeriod.filter(
   (sale) => sale.department === "bar"
