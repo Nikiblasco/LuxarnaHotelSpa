@@ -1774,14 +1774,14 @@ app.post("/api/department-sales/import", async (req, res) => {
 
       const saleKey = makeSaleKey(sale);
 
-      if (existingKeys.has(saleKey)) {
+      /*if (existingKeys.has(saleKey)) {
         skippedRows.push({
           index,
           rowNumber: incoming.rowNumber,
           reason: "Duplicate sale.",
         });
         continue;
-      }
+      }*/
 
       const created =
         await storage.createDepartmentSale(sale);
