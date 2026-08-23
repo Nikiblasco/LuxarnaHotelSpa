@@ -275,9 +275,9 @@ function MonthlyStats({ allBookings, rooms }: { allBookings: Booking[]; rooms: R
 
   const topRoom = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? "—";
 
-  const availableYears = [
-    ...new Set(allBookings.map(b => new Date(b.checkIn).getUTCFullYear())),
-  ].sort((a, b) => b - a);
+  const availableYears = Array.from(
+    new Set(allBookings.map(b => new Date(b.checkIn).getUTCFullYear())),
+  ).sort((a, b) => b - a);
 
   if (!availableYears.includes(year) && availableYears.length > 0) {
     availableYears.unshift(year);

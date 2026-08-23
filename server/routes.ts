@@ -2232,12 +2232,19 @@ app.post("/api/verify-payment", async (req, res) => {
       return res.status(402).json({ error: "Payment not confirmed by Paystack" });
     }
 
-    // 2. Save booking to DB
+    // 2. Save booking to DB - first look up room to get nightlyRate
+    const rooms = await storage.getRooms();
+    const room = rooms.find((r) => r.id === roomId);
+    if (!room) {
+      return res.status(404).json({ error: "Room not found" });
+    }
+
     const parsed = insertBookingSchema.safeParse({
       roomId,
       guestName,
       checkIn: new Date(checkIn),
       checkOut: new Date(checkOut),
+      nightlyRate: room.price,
     });
 
     if (!parsed.success) {
