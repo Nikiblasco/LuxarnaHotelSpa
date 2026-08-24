@@ -140,9 +140,9 @@ export default function Checkout() {
           { display_name: "Check-out", value: fmtDate(checkOut) },
         ],
       },
-      callback: async (response: { reference: string }) => { 
-       console.log("✅ callback fired:", response.reference);
-  updateStatus("verifying");
+      onSuccess: async (response: { reference: string }) => {
+        console.log("✅ onSuccess fired:", response.reference);
+        updateStatus("verifying");
         try {
           const res = await fetch("/api/verify-payment", {
             method: "POST",
