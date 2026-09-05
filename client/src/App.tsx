@@ -3,6 +3,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
 import Home from "@/pages/Home";
 import Rooms from "@/pages/Rooms";
 import Spa from "@/pages/Spa";
@@ -14,9 +15,11 @@ import RestaurantReports from "@/pages/RestaurantReports";
 import BarReports from "@/pages/BarReports";
 import NotFound from "@/pages/not-found";
 import LoyaltySignUp from "@/pages/LoyaltySignUp";
+import Checkout from "@/pages/Checkout";
+import TermsAndConditions from "@/pages/TermsAndConditions";
+
 import ChatBot from "@/components/ChatBot";
 import PromoPopup from "@/components/PromoPopup";
-import Checkout from "@/pages/Checkout";
 
 function Router() {
   return (
@@ -24,16 +27,14 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/rooms" component={Rooms} />
       <Route path="/spa" component={Spa} />
-      <Route
-        path="/restaurant"
-        component={Restaurant}
-      />
+      <Route path="/restaurant" component={Restaurant} />
       <Route path="/about" component={About} />
       <Route path="/contact" component={Contact} />
+
       <Route
-  path="/admin/bar-reports"
-  component={BarReports}
-/>
+        path="/admin/bar-reports"
+        component={BarReports}
+      />
 
       <Route
         path="/admin/restaurant-reports"
@@ -50,6 +51,11 @@ function Router() {
       <Route
         path="/checkout"
         component={Checkout}
+      />
+
+      <Route
+        path="/terms-and-conditions"
+        component={TermsAndConditions}
       />
 
       <Route component={NotFound} />
