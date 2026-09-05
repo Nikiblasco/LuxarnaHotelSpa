@@ -445,10 +445,12 @@ export async function registerRoutes(
 });
 
 app.get("/api/bookings/stats", async (_req, res) => {
+  res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.set("Pragma", "no-cache");
+  res.set("Expires", "0");
+
   const all = await storage.getAllBookings();
   res.json(all);
-  console.log("Stats bookings:", all.length);
-console.log(all);
 });
 
 app.get("/api/analytics", async (req, res) => {
