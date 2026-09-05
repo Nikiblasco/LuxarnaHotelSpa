@@ -15,6 +15,8 @@ export function getSupabase() {
 
   const url = process.env.SUPABASE_URL ?? "";
   const key = process.env.SUPABASE_SERVICE_KEY ?? "";
+  
+  console.log("[Supabase] Connecting to:", url);
 
   if (!url || !key) {
     throw new Error(
