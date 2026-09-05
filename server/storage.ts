@@ -150,29 +150,42 @@ export class SupabaseStorage implements IStorage {
     }));
   }
 
-  async getAllBookings(): Promise<Booking[]> {
+ async getAllBookings(): Promise<Booking[]> {
+  const pageSize = 1000;
+  let allRows: any[] = [];
+  let from = 0;
+
+  while (true) {
     const { data, error } = await getSupabase()
       .from("bookings")
       .select("*")
-      .order("check_in", { ascending: true });
+      .order("check_in", { ascending: true })
+      .range(from, from + pageSize - 1);
 
     if (error) {
       console.error("[Storage] getAllBookings error:", error.message);
       throw new Error(error.message);
     }
 
-    return ((data ?? []) as any[]).map((row) => ({
-      id: row.id,
-      roomId: row.room_id,
-      guestName: row.guest_name,
-      checkIn: new Date(row.check_in),
-      checkOut: new Date(row.check_out),
-      checkinTime: row.checkin_time ?? null,
-      checkoutTime: row.checkout_time ?? "12:00 PM",
-      nightlyRate: Number(row.nightly_rate),
-    }));
+    if (!data || data.length === 0) break;
+
+    allRows = allRows.concat(data);
+
+    if (data.length < pageSize) break; // last page reached
+    from += pageSize;
   }
 
+  return allRows.map((row) => ({
+    id: row.id,
+    roomId: row.room_id,
+    guestName: row.guest_name,
+    checkIn: new Date(row.check_in),
+    checkOut: new Date(row.check_out),
+    checkinTime: row.checkin_time ?? null,
+    checkoutTime: row.checkout_time ?? "12:00 PM",
+    nightlyRate: Number(row.nightly_rate),
+  }));
+}
   async createBooking(booking: InsertBooking): Promise<Booking> {
     const id = randomUUID();
     const room = ROOMS.find((r) => r.id === booking.roomId);
