@@ -13,7 +13,7 @@ const navItems = [
   { name: "Restaurant", path: "/restaurant" },
   { name: "About",      path: "/about" },
   { name: "Contact",    path: "/contact" },
-  { name: "Terms & Conditions",    path: "/TermsAndConditions" },
+  { name: "Terms & Conditions",    path: "/terms-and-conditions" },
 ];
 
 export default function Navigation() {
