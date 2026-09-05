@@ -272,22 +272,33 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getAllDepartmentSales(): Promise<DepartmentSale[]> {
+  const pageSize = 1000;
+  let allRows: any[] = [];
+  let from = 0;
+
+  while (true) {
     const { data, error } = await getSupabase()
       .from("department_sales")
       .select("*")
       .order("sale_date", { ascending: false })
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(from, from + pageSize - 1);
 
     if (error) {
-      console.error(
-        "[Storage] getAllDepartmentSales error:",
-        error.message
-      );
+      console.error("[Storage] getAllDepartmentSales error:", error.message);
       throw new Error(error.message);
     }
 
-    return ((data ?? []) as any[]).map(mapDepartmentSale);
+    if (!data || data.length === 0) break;
+
+    allRows = allRows.concat(data);
+
+    if (data.length < pageSize) break; // last page reached
+    from += pageSize;
   }
+
+  return allRows.map(mapDepartmentSale);
+}
 
  async createDepartmentSale(
   sale: InsertDepartmentSale
