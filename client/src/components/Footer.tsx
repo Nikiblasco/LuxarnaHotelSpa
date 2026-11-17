@@ -86,6 +86,24 @@ export default function Footer() {
                   Contact
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/join-our-team"
+                  className="text-secondary-foreground/80 hover:text-primary transition-colors"
+                  data-testid="link-footer-careers"
+                >
+                  Join Our Team
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms-and-conditions"
+                  className="text-secondary-foreground/80 hover:text-primary transition-colors"
+                  data-testid="link-footer-terms"
+                >
+                  Terms & Conditions
+                </Link>
+              </li>
             </ul>
           </div>
 

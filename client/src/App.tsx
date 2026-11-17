@@ -17,6 +17,7 @@ import NotFound from "@/pages/not-found";
 import LoyaltySignUp from "@/pages/LoyaltySignUp";
 import Checkout from "@/pages/Checkout";
 import TermsAndConditions from "@/pages/TermsAndConditions";
+import JoinOurTeam from "@/pages/JoinOurTeam";
 
 import ChatBot from "@/components/ChatBot";
 import PromoPopup from "@/components/PromoPopup";
@@ -56,6 +57,11 @@ function Router() {
       <Route
         path="/terms-and-conditions"
         component={TermsAndConditions}
+      />
+
+      <Route
+        path="/join-our-team"
+        component={JoinOurTeam}
       />
 
       <Route component={NotFound} />

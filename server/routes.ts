@@ -1,3 +1,4 @@
+import multer from "multer";
 import type { AnalyticsBooking } from "./analytics/types";
 import {
   countBookings,
@@ -2274,5 +2275,145 @@ app.post("/api/verify-payment", async (req, res) => {
   }
 });
 // ─────────────────────────────────────────────────────────────────────────
+  // ── Job applications (emailed to the hotel via Resend) ───────────────────
+  const cvUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+  });
+
+  const ALLOWED_CV_TYPES = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+  const ALLOWED_ROLES = [
+    "Housekeeping",
+    "Receptionist",
+    "Bartender",
+    "Cook",
+    "Supervisor",
+    "Manager",
+  ];
+
+  const escapeHtml = (value: string) =>
+    value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+  // Simple spam protection: max 5 applications per IP per hour
+  const applicationAttempts = new Map<string, number[]>();
+
+  app.post("/api/applications", (req, res) => {
+    cvUpload.single("cv")(req, res, async (uploadError) => {
+      if (uploadError) {
+        const tooBig =
+          uploadError instanceof multer.MulterError &&
+          uploadError.code === "LIMIT_FILE_SIZE";
+        return res.status(400).json({
+          error: tooBig
+            ? "Your CV must be smaller than 5MB."
+            : "We could not read your CV file. Please try again.",
+        });
+      }
+
+      const ip = req.ip ?? "unknown";
+      const hourAgo = Date.now() - 60 * 60 * 1000;
+      const recent = (applicationAttempts.get(ip) ?? []).filter((t) => t > hourAgo);
+      if (recent.length >= 5) {
+        return res.status(429).json({
+          error: "Too many applications from this connection. Please try again later.",
+        });
+      }
+
+      const body = req.body ?? {};
+      const fullName = String(body.fullName ?? "").trim();
+      const email = String(body.email ?? "").trim();
+      const phone = String(body.phone ?? "").trim();
+      const role = String(body.role ?? "").trim();
+      const message = String(body.message ?? "").trim();
+      const file = req.file;
+
+      if (fullName.length < 2 || fullName.length > 100) {
+        return res.status(400).json({ error: "Enter your full name." });
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 200) {
+        return res.status(400).json({ error: "Enter a valid email address." });
+      }
+      if (phone.replace(/\D/g, "").length < 7 || phone.length > 30) {
+        return res.status(400).json({ error: "Enter a valid phone number." });
+      }
+      if (!ALLOWED_ROLES.includes(role)) {
+        return res.status(400).json({ error: "Choose a valid role." });
+      }
+      if (message.length > 3000) {
+        return res.status(400).json({ error: "Your message is too long." });
+      }
+      if (!file) {
+        return res.status(400).json({ error: "Attach your CV as a PDF or Word file." });
+      }
+      if (!ALLOWED_CV_TYPES.includes(file.mimetype)) {
+        return res.status(400).json({
+          error: "Upload your CV as a PDF or Word file (.pdf, .doc, .docx).",
+        });
+      }
+
+      try {
+        const safeFileName = file.originalname.replace(/[^\w.\- ]/g, "_");
+        const safeSubjectName = fullName.replace(/[\r\n]/g, " ");
+
+        const emailRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "Luxarna Careers <careers@luxarnahotel.com>",
+            to: "luxarnahotel@gmail.com",
+            reply_to: email,
+            subject: `New job application: ${role} - ${safeSubjectName}`,
+            html: `
+              <div style="font-family:Arial,sans-serif;max-width:560px;">
+                <h2>New job application</h2>
+                <p><strong>Role:</strong> ${escapeHtml(role)}</p>
+                <p><strong>Name:</strong> ${escapeHtml(fullName)}</p>
+                <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+                <p><strong>Phone:</strong> ${escapeHtml(phone)}</p>
+                <p><strong>About the applicant:</strong></p>
+                <p style="white-space:pre-wrap;">${escapeHtml(message) || "No message provided."}</p>
+                <p style="color:#666;font-size:13px;">The applicant's CV is attached. Reply to this email to contact them directly.</p>
+              </div>
+            `,
+            attachments: [
+              {
+                filename: safeFileName,
+                content: file.buffer.toString("base64"),
+              },
+            ],
+          }),
+        });
+
+        if (!emailRes.ok) {
+          console.error("[Applications] Resend error:", await emailRes.text());
+          return res.status(502).json({
+            error: "We could not send your application. Please try again.",
+          });
+        }
+
+        recent.push(Date.now());
+        applicationAttempts.set(ip, recent);
+
+        return res.status(201).json({ success: true });
+      } catch (err: any) {
+        console.error("[Applications] Error:", err.message);
+        return res.status(500).json({
+          error: "We could not send your application. Please try again.",
+        });
+      }
+    });
+  });
+  // ─────────────────────────────────────────────────────────────────────────
   return httpServer;
 }
