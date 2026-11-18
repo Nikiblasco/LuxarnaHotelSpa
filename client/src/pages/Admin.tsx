@@ -35,10 +35,10 @@ const CURRENT_ROOM_PRICES: Record<string, number> = {
   "202": 30000,
   "203": 30000,
   "205": 30000,
-  "103": 23000,
+  "103": 25000,
 };
 
-const PRICE_INCREASE_DATE = "2026-04-01";
+const PRICE_INCREASE_DATE = "2026-11-17";
 
 function getNightlyRate(roomId: string, checkIn: string) {
   const prices =

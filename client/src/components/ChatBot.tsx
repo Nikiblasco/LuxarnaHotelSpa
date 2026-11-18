@@ -30,7 +30,7 @@ Deluxe Room (Rooms 101, 102, 201, 202, 203, 205) — ₦30,000/night
 6 rooms with generous space and refined decor.
 Amenities: WiFi, AC, TV, Bathroom.
 
-Standard Room (Room 103) — ₦23,000/night
+Standard Room (Room 103) — ₦25,000/night
 Comfortable and excellent value.
 Amenities: WiFi, AC, TV.
 

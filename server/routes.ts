@@ -105,7 +105,7 @@ const ROOM_ANALYTICS_DEFINITIONS: RoomAnalyticsDefinition[] = [
     roomType: "Standard Room",
     roomIds: ["103"],
     roomCount: 1,
-    defaultNightlyRate: 23000,
+    defaultNightlyRate: 25000,
   },
 ];
 

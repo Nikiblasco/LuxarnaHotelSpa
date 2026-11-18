@@ -37,7 +37,7 @@ const ROOMS: Room[] = [
   { id: "202", name: "Deluxe Room 202", type: "Deluxe Room", price: 30000 },
   { id: "203", name: "Deluxe Room 203", type: "Deluxe Room", price: 30000 },
   { id: "205", name: "Deluxe Room 205", type: "Deluxe Room", price: 30000 },
-  { id: "103", name: "Standard Room", type: "Standard Room", price: 23000 },
+  { id: "103", name: "Standard Room", type: "Standard Room", price: 25000 },
 ];
 
 export type Department = "kitchen" | "bar";
